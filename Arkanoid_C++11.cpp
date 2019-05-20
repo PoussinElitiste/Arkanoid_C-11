@@ -19,7 +19,14 @@ constexpr int countBlocksX{ 11 }, countBlocksY{ 4 };
 
 constexpr float ftStep{ 1.f }, ftSlice{ 1.f };
 
-struct Ball
+struct GameElement
+{
+	virtual void update(float mFT) {}
+	virtual void draw() {}
+	virtual ~GameElement() {}
+};
+
+struct Ball: public GameElement
 {
 	CircleShape shape;
 	Vector2f velocity{ -ballVelocity, -ballVelocity };
@@ -31,7 +38,7 @@ struct Ball
 		shape.setOrigin(ballRadius, ballRadius);
 	}
 
-	void update(Frametime mFT)
+	void update(Frametime mFT) override
 	{
 		shape.move(velocity * mFT);
 		if (left() < 0)
@@ -74,7 +81,7 @@ struct Rectangle
 	float bottom()	const noexcept { return y() + shape.getSize().y / 2; }
 };
 
-struct Paddle: public Rectangle
+struct Paddle: public Rectangle, GameElement
 {
 	Vector2f velocity;
 	Paddle(float mX, float mY)
@@ -85,7 +92,7 @@ struct Paddle: public Rectangle
 		shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
 	}
 
-	void update(Frametime mFT)
+	void update(Frametime mFT) override
 	{
 		shape.move(velocity * mFT);
 
@@ -104,7 +111,7 @@ struct Paddle: public Rectangle
 	}
 };
 
-struct Brick : Rectangle
+struct Brick : public Rectangle
 {
 	Vector2f velocity;
 	
@@ -181,9 +188,13 @@ struct Game
 	Frametime currentSlice{ 0.f };
 
 	bool running{ false };
-	Ball ball{ windowWidth / 2, windowHeight / 2 };
-	Paddle paddle{ windowWidth / 2, windowHeight - 50 };
-	vector<Brick> bricks;
+	vector<unique_ptr<Ball>> balls;
+	//Ball ball{ windowWidth / 2, windowHeight / 2 };
+
+	vector<unique_ptr<Paddle>> paddles;
+	//Paddle paddle{ windowWidth / 2, windowHeight - 50 };
+
+	vector<unique_ptr<Brick>> bricks;
 
 	Game()
 	{
@@ -203,9 +214,12 @@ struct Game
 		{
 			for (int iY{ 0 }; iY < countBlocksY; ++iY)
 			{
-				bricks.emplace_back((iX + 1)*(blockWidth + 3) + 22, (iY + 1)*(blockHeight + 3));
+				bricks.emplace_back(new Brick{ (iX + 1)*(blockWidth + 3) + 22, (iY + 1)*(blockHeight + 3) });
 			}
 		}
+
+		balls.emplace_back(new Ball{ windowWidth / 2, windowHeight / 2 });
+		paddles.emplace_back(new Paddle{ windowWidth / 2, windowHeight - 50 });
 	}
 
 	void run()
@@ -261,30 +275,52 @@ struct Game
 		for (; currentSlice >= ftSlice; currentSlice -= ftSlice)
 		{
 			// element must be update at fixed time to get precision
-			ball.update(ftStep);
-			paddle.update(ftStep);
-			testCollision(paddle, ball);
-			for (auto &brick : bricks)
+			for (auto &ball : balls)
 			{
-				testCollision(brick, ball);
+				ball->update(ftStep);
+			}
+			
+			for (auto &paddle : paddles)
+			{
+				paddle->update(ftStep);
+			}
+
+			for (auto &ball : balls)
+			{
+				for (auto &paddle : paddles)
+				{
+					testCollision(*paddle, *ball);
+				}
+
+				for (auto &brick : bricks)
+				{
+					testCollision(*brick, *ball);
+				}
 			}
 
 			// Note: remove_if sort list and push all destroyed brick at the end of the list
 			//  -> update several time on the same frame
-			bricks.erase(remove_if(begin(bricks), end(bricks), [](const Brick &mBrick) {
-				return mBrick.destroyed;
+			bricks.erase(remove_if(begin(bricks), end(bricks), [](const unique_ptr<Brick> &mBrick) {
+				return mBrick->destroyed;
 			}), end(bricks));
 		}
 	}
 
 	void drawPhase()
 	{
-		window.draw(ball.shape);
-		window.draw(paddle.shape);
+		for (auto &ball : balls)
+		{
+			window.draw(ball->shape);
+		}
+
+		for (auto &paddle : balls)
+		{
+			window.draw(paddle->shape);
+		}
 
 		for (auto &brick : bricks)
 		{
-			window.draw(brick.shape);
+			window.draw(brick->shape);
 		}
 		window.display();
 	}
