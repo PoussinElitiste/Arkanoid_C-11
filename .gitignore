@@ -15,8 +15,6 @@
 [Dd]ebugPublic/
 [Rr]elease/
 [Rr]eleases/
-x64/
-x86/
 bld/
 [Bb]in/
 [Oo]bj/
@@ -261,3 +259,5 @@ __pycache__/
 *.pyc
 /SFML-2.5.1/doc/html/*.html
 /SFML-2.5.1/doc/html
+/SFML-2.5.1/x32/doc/html
+/SFML-2.5.1/x64/doc/html
