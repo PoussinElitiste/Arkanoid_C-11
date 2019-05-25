@@ -211,8 +211,8 @@ namespace Arkanoid
 	using Frametime = float;
 
 	constexpr unsigned int windowWidth{ 800 }, windowHeight{ 600 };
-	constexpr float ballRadius{ 10.f }, ballVelocity{ 8.f };
-	constexpr float paddleWidth{ 60.f }, paddleHeight{ 20.f }, paddleVelocity{ 6.f };
+	constexpr float ballRadius{ 10.f }, ballVelocity{ 0.8f };
+	constexpr float paddleWidth{ 60.f }, paddleHeight{ 20.f }, paddleVelocity{ .6f };
 	constexpr float blockWidth{ 60.f }, blockHeight{ 20.f };
 	constexpr int countBlocksX{ 11 }, countBlocksY{ 4 };
 
@@ -325,6 +325,11 @@ namespace Arkanoid
 			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
 		}
 
+		void setColor(Color mColor)
+		{
+			shape.setFillColor(mColor);
+		}
+
 		void update(Frametime mFT) override
 		{
 			shape.setPosition(cPosition->position);
@@ -349,7 +354,7 @@ namespace Arkanoid
 				cPhysics->velocity.x = -paddleVelocity;			
 			else if (Keyboard::isKeyPressed(Keyboard::Key::Right) && cPhysics->right() < windowWidth)
 				cPhysics->velocity.x = paddleVelocity;
-			else
+			else if (cPhysics->velocity.x != 0.f)
 				cPhysics->velocity.x = {};
 		}
 	};
@@ -428,7 +433,7 @@ namespace Arkanoid
 			entity.addComponent<CCircle>(this, ballRadius);
 
 			// post initialisation
-			auto cPhysics(entity.getComponent<CPhysics>());
+			auto &cPhysics(entity.getComponent<CPhysics>());
 			cPhysics.velocity = Vector2f{ -ballVelocity, -ballVelocity };
 
 			// we delegate collision process to Game 
@@ -455,6 +460,9 @@ namespace Arkanoid
 			entity.addComponent<CPhysics>(halfSize);
 			entity.addComponent<CRectangle>(this);
 
+			auto &cBrick = entity.getComponent<CRectangle>();
+			cBrick.setColor(Color::Yellow);
+
 			entity.addGroup(ArkanoidGroup::GBrick);
 
 			return entity;
@@ -478,7 +486,7 @@ namespace Arkanoid
 		Game_v2()
 		{
 			// if fps are too slow, velocity process could skip collision
-			window.setFramerateLimit(240);
+			window.setFramerateLimit(30);
 
 			createPaddle();
 			createBall();
@@ -535,7 +543,9 @@ namespace Arkanoid
 			currentSlice += lastFt;
 
 			// handle fixed FPS independant from CPU clock
-			// note : if process took too much time we loop several time to "reach" lost time
+			// note : 
+			// if process took too much time --> execute several time the frame
+			// if process took too less time --> skip the frame
 			for (; currentSlice >= ftSlice; currentSlice -= ftSlice)
 			{
 				manager.refresh();
