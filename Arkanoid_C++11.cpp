@@ -211,7 +211,7 @@ namespace Arkanoid
 	using Frametime = float;
 
 	constexpr unsigned int windowWidth{ 800 }, windowHeight{ 600 };
-	constexpr float ballRadius{ 10.f }, ballVelocity{ 0.8f };
+	constexpr float ballRadius{ 7.f }, ballVelocity{ 0.4f };
 	constexpr float paddleWidth{ 60.f }, paddleHeight{ 20.f }, paddleVelocity{ .6f };
 	constexpr float blockWidth{ 60.f }, blockHeight{ 20.f };
 	constexpr int countBlocksX{ 11 }, countBlocksY{ 4 };
@@ -250,6 +250,13 @@ namespace Arkanoid
 		void init() override
 		{
 			cPosition = &entityPtr->getComponent<CPosition>();
+		}
+
+		CPhysics &setVelocity(const Vector2f &mVelocity)
+		{
+			velocity = mVelocity;
+
+			return *this;
 		}
 
 		void update(Frametime mFT) override
@@ -295,6 +302,12 @@ namespace Arkanoid
 			shape.setOrigin(ballRadius, ballRadius);
 		}
 
+		CCircle &setColor(Color mColor)
+		{
+			shape.setFillColor(mColor);
+			return *this;
+		}
+
 		void update(Frametime mFT) override
 		{
 			shape.setPosition(cPosition->position);
@@ -325,9 +338,16 @@ namespace Arkanoid
 			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
 		}
 
-		void setColor(Color mColor)
+		CRectangle &setColor(Color mColor)
 		{
 			shape.setFillColor(mColor);
+			return *this;
+		}
+
+		CRectangle &setSize(const Vector2f size)
+		{
+			shape.setSize(size);
+			return *this;
 		}
 
 		void update(Frametime mFT) override
@@ -367,7 +387,7 @@ namespace Arkanoid
 		if (!isIntersecting(cpPaddle, cpBall)) return;
 
 		cpBall.velocity.y = -ballVelocity;
-		if (cpBall.x() < cpBall.x()) cpBall.velocity.x = -ballVelocity;
+		if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
 		else cpBall.velocity.x = ballVelocity;
 	}
 
@@ -376,10 +396,8 @@ namespace Arkanoid
 		auto &cpBrick(mBrick.getComponent<CPhysics>());
 		auto &cpBall(mBall.getComponent<CPhysics>());
 
-		if (!isIntersecting(cpBrick, cpBall))
-		{
-			return;
-		}
+		if (!isIntersecting(cpBrick, cpBall)) return;
+
 		mBrick.destroy();
 
 		// test collision scenario to deduce reaction
@@ -429,22 +447,19 @@ namespace Arkanoid
 			auto &entity(manager.addEntity());
 
 			entity.addComponent<CPosition>(Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
-			entity.addComponent<CPhysics>(Vector2f{ ballRadius, ballRadius });
-			entity.addComponent<CCircle>(this, ballRadius);
+			entity.addComponent<CCircle>(this, ballRadius).setColor(Color::White);
+			entity.addComponent<CPhysics>(Vector2f{ ballRadius, ballRadius })
+				.setVelocity(Vector2f{ -ballVelocity, -ballVelocity })
+				// we delegate collision process to Game 
+				.onOutOfBounds = [&entity](const Vector2f &mSide)
+				{
+					auto &cPhysics{ entity.getComponent<CPhysics>() };
+					if (mSide.x != 0.f)
+						cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
 
-			// post initialisation
-			auto &cPhysics(entity.getComponent<CPhysics>());
-			cPhysics.velocity = Vector2f{ -ballVelocity, -ballVelocity };
-
-			// we delegate collision process to Game 
-			cPhysics.onOutOfBounds = [&cPhysics](const Vector2f &mSide)
-			{
-				if (mSide.x != 0.f)
-					cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
-
-				if (mSide.y != 0.f)
-					cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
-			};
+					if (mSide.y != 0.f)
+						cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
+				};
 
 			entity.addGroup(ArkanoidGroup::GBall);
 
@@ -458,10 +473,7 @@ namespace Arkanoid
 
 			entity.addComponent<CPosition>(mPosition);
 			entity.addComponent<CPhysics>(halfSize);
-			entity.addComponent<CRectangle>(this);
-
-			auto &cBrick = entity.getComponent<CRectangle>();
-			cBrick.setColor(Color::Yellow);
+			entity.addComponent<CRectangle>(this).setColor(Color::Yellow);
 
 			entity.addGroup(ArkanoidGroup::GBrick);
 
@@ -475,7 +487,7 @@ namespace Arkanoid
 
 			entity.addComponent<CPosition>(Vector2f{windowWidth/2.f, windowHeight - 60.f});
 			entity.addComponent<CPhysics>(halfSize);
-			entity.addComponent<CRectangle>(this);
+			entity.addComponent<CRectangle>(this).setSize({ paddleWidth *1.5f, paddleHeight * 0.5f});
 			entity.addComponent<CPaddleControl>();
 
 			entity.addGroup(ArkanoidGroup::GPaddle);
@@ -486,7 +498,7 @@ namespace Arkanoid
 		Game_v2()
 		{
 			// if fps are too slow, velocity process could skip collision
-			window.setFramerateLimit(30);
+			window.setFramerateLimit(60);
 
 			createPaddle();
 			createBall();
