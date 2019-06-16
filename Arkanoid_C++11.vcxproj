@@ -163,6 +163,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ECS.h" />
+    <ClInclude Include="Arkanoid_Classic.h" />
+    <ClInclude Include="Arkanoid_ECS.h" />
+    <ClInclude Include="Arkanoid_Global.h" />
+    <ClInclude Include="PhysicUtils.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
