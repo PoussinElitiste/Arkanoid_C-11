@@ -259,6 +259,8 @@ __pycache__/
 *.pyc
 /SFML-2.5.1/doc/html/*.html
 /SFML-2.5.1/doc/html
-/SFML-2.5.1/x32/doc/html
-/SFML-2.5.1/x64/doc/html
+/SFML-2.5.1/x32/examples
+/SFML-2.5.1/x32/doc
+/SFML-2.5.1/x64/examples
+/SFML-2.5.1/x64/doc
 *.exe
