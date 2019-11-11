@@ -53,7 +53,7 @@ namespace ECS
 		Entity *entityPtr{ nullptr };
 
 		virtual void init() {}
-		virtual void update(float mFT) {}
+		virtual void update(float) {}
 		virtual void draw() {}
 		virtual ~Component() {}
 	};

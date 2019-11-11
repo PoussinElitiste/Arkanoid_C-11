@@ -9,8 +9,8 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "ECS.h"
-#include "PhysicUtils.h"
+#include "Core/ECS.h"
+#include "Core/PhysicUtils.h"
 
 using namespace std;
 using namespace sf;
@@ -106,7 +106,7 @@ namespace Arkanoid
 			return *this;
 		}
 
-		void update(Frametime mFT) override
+		void update(Frametime) override
 		{
 			shape.setPosition(cPosition->position);
 		}
@@ -148,7 +148,7 @@ namespace Arkanoid
 			return *this;
 		}
 
-		void update(Frametime mFT) override
+		void update(Frametime) override
 		{
 			shape.setPosition(cPosition->position);
 		}
@@ -166,7 +166,7 @@ namespace Arkanoid
 			cPhysics = &entityPtr->getComponent<CPhysics>();
 		}
 
-		void update(Frametime mFT)
+		void update(Frametime)
 		{
 			if (Keyboard::isKeyPressed(Keyboard::Key::Left) && cPhysics->left() > 0)
 				cPhysics->velocity.x = -paddleVelocity;
