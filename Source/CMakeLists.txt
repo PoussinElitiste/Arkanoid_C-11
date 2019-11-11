@@ -4,8 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 #Project name and version
 project(Arkanoid VERSION 0.1)
 
-#include_directories(${PROJECT_BINARY_BIN})
-set(EXECUTABLE_OUTPUT_PATH "../bin")
+set(EXECUTABLE_OUTPUT_PATH "../Bin")
 
 if (MSVC)
     add_compile_options(/W4)
