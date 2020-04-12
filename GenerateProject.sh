@@ -8,4 +8,4 @@ mkdir Build
 
 echo "step 3 - generate project"
 cd Build/
-cmake ../Source/
+cmake ../
