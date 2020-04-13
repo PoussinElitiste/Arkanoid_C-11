@@ -14,7 +14,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "PhysicUtils.h"
+#include "Core/PhysicUtils.h"
 
 using namespace std;
 using namespace sf;

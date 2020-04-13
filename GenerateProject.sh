@@ -6,6 +6,6 @@ rm -r Build
 echo "step 2 - create Build directory"
 mkdir Build
 
-echo "step 3 - generate project"
+echo "step 3 - generate project in Build directory"
 cd Build/
 cmake ../
