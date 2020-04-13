@@ -21,7 +21,7 @@ configure_file("${ARKANOID_ROOT_DIR}/Source/ArkanoidConfig.h.in" "${ARKANOID_ROO
 
 # external libraries
 set(SFML_STATIC_LIBRARIES TRUE)
-set(SFML_DIR ${ARKANOID_ROOT_DIR}/SFML-2.5.1/x32/lib/cmake/SFML)
+set(SFML_DIR ${ARKANOID_ROOT_DIR}/SFML-2.5.1/x64/lib/cmake/SFML)
 find_package(SFML 2 COMPONENTS graphics audio REQUIRED)
 
 # add source files
