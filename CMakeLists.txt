@@ -34,7 +34,7 @@ add_executable( ${PROJECT_NAME} ${SRCS} )
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT Arkanoid)
 
-# link target
+# link include target
 target_link_libraries(Arkanoid sfml-graphics sfml-audio)
 # add the binary tree to the search path for include files
 # so that we will find ArkanoidConfig.h

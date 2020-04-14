@@ -8,4 +8,4 @@ mkdir Build
 
 echo "step 3 - generate project in Build directory"
 cd Build/
-cmake ../ -G "Visual Studio 15 Win64"
+cmake ../ -A x64
