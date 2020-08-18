@@ -1,7 +1,17 @@
-#ifndef _COMPONENT_H
-#define _COMPONENT_H
+#pragma once
 
+namespace ECS
+{   
+    class Entity;
+    struct Component
+    {
+        Entity &_entity;
 
-class Component {
-};
-#endif
+        Component(Entity &entity) : _entity(entity) {}
+        virtual ~Component() = default;
+
+        virtual void init() {}
+        virtual void update(float) {}
+        virtual void draw() {}
+    };
+}

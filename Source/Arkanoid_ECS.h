@@ -1,16 +1,12 @@
 #pragma once
 
-#include <chrono>
-#include <functional>
-#include <iostream>
-#include <bitset>
-#include <array>
-#include <assert.h>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "Core/ECS.h"
 #include "Core/PhysicUtils.h"
+#include "Core/Component.h"
+#include "Core/Entity.h"
+#include "Core/Manager.h"
 
 using namespace std;
 using namespace sf;
@@ -26,28 +22,31 @@ namespace Arkanoid
 	//------------
 	struct CPosition : Component
 	{
-		Vector2f position;
-		CPosition() = default;
+		Vector2f _position;
 
 		// we assume root position is the center of the shape
-		CPosition(const Vector2f &mPosition) : position{ mPosition } {}
+        CPosition(Entity &entity, const Vector2f &mPosition);
 
-		float x() const noexcept { return position.x; }
-		float y() const noexcept { return position.y; }
+		float x() const noexcept { return _position.x; }
+		float y() const noexcept { return _position.y; }
 	};
 
-	struct CPhysics : Component
+    CPosition::CPosition(Entity &entity, const Vector2f &mPosition)
+        : Component(entity), _position{ mPosition }
+    {}
+
+    struct CPhysics : Component
 	{
-		CPosition *cPosition{ nullptr };
+		std::weak_ptr<CPosition> cPosition;
 		Vector2f velocity, halfSize;
 
 		function<void(const Vector2f &)> onOutOfBounds;
 
-		CPhysics(const Vector2f &mHalfSize) : halfSize{ mHalfSize } {}
+		CPhysics(Entity& entity, const Vector2f &mHalfSize) : Component(entity), halfSize{ mHalfSize } {}
 
 		void init() override
 		{
-			cPosition = &entityPtr->getComponent<CPosition>();
+			cPosition = std::make_shared<CPosition>(_entity.getComponent<CPosition>());
 		}
 
 		CPhysics &setVelocity(const Vector2f &mVelocity)
@@ -59,7 +58,8 @@ namespace Arkanoid
 
 		void update(Frametime mFT) override
 		{
-			cPosition->position += velocity * mFT;
+			if (auto tmp = cPosition.lock())
+				tmp->_position += velocity * mFT;
 
 			if (onOutOfBounds == nullptr) return;
 
@@ -70,8 +70,18 @@ namespace Arkanoid
 			else if (bottom() > windowHeight) onOutOfBounds(Vector2f{ 0.f, -1.f });
 		}
 
-		float x()		const noexcept { return cPosition->x(); }
-		float y()		const noexcept { return cPosition->y(); }
+		float x()		const noexcept 
+		{ 
+			if (auto tmp = cPosition.lock())
+				return tmp->x();
+			return 0.f;
+		}
+		float y()		const noexcept 
+		{ 
+			if (auto tmp = cPosition.lock())
+				return tmp->y();
+			return 0.f;
+		}
 		float left()	const noexcept { return x() - halfSize.x; }
 		float right()	const noexcept { return x() + halfSize.x; }
 		float top()		const noexcept { return y() - halfSize.y; }
@@ -82,18 +92,19 @@ namespace Arkanoid
 	{
 		// TODO: use DIP injection
 		Game_v2 *game{ nullptr };
-		CPosition *cPosition{ nullptr };
+		std::weak_ptr<CPosition> cPosition;
 
 		// define the composition itself
 		CircleShape shape;
 		float radius;
 
-		CCircle(Game_v2 *mGame, float mRadius)
-			: game{ mGame }, radius{ mRadius }{}
+		CCircle(Entity& entity, Game_v2 *mGame, float mRadius)
+			: Component(entity), game{ mGame }, radius{ mRadius }{}
 
 		void init() override
 		{
-			cPosition = &entityPtr->getComponent<CPosition>();
+			//if (auto tmp = _entity.lock())
+				cPosition = std::make_shared<CPosition>(_entity.getComponent<CPosition>());
 
 			shape.setRadius(ballRadius);
 			shape.setFillColor(Color::Red);
@@ -105,10 +116,12 @@ namespace Arkanoid
 			shape.setFillColor(mColor);
 			return *this;
 		}
+        
 
 		void update(Frametime) override
 		{
-			shape.setPosition(cPosition->position);
+			if (auto tmp = cPosition.lock())
+				shape.setPosition(tmp->_position);
 		}
 
 		// defined after Game class
@@ -119,17 +132,17 @@ namespace Arkanoid
 	{
 		// TODO: use DIP injection
 		Game_v2 *game{ nullptr };
-		CPosition *cPosition{ nullptr };
+		std::weak_ptr<CPosition> cPosition;
 
 		// define the composition itself
 		RectangleShape shape;
 
-		CRectangle(Game_v2 *mGame)
-			: game{ mGame } {}
+		CRectangle(Entity& entity, Game_v2 *mGame)
+			: Component(entity), game{ mGame } {}
 
 		void init() override
 		{
-			cPosition = &entityPtr->getComponent<CPosition>();
+			cPosition = std::make_shared<CPosition>(_entity.getComponent<CPosition>());
 
 			shape.setSize({ paddleWidth, paddleHeight });
 			shape.setFillColor(Color::Red);
@@ -150,7 +163,8 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			shape.setPosition(cPosition->position);
+			if (auto tmp = cPosition.lock())
+				shape.setPosition(tmp->_position);
 		}
 
 		// defined after Game class
@@ -159,21 +173,26 @@ namespace Arkanoid
 
 	struct CPaddleControl : Component
 	{
-		CPhysics *cPhysics{ nullptr };
+		std::weak_ptr<CPhysics> cPhysics;
+
+        CPaddleControl(Entity &entity) : Component(entity) {}
 
 		void init() override
 		{
-			cPhysics = &entityPtr->getComponent<CPhysics>();
+			cPhysics = std::make_shared<CPhysics>(_entity.getComponent<CPhysics>());
 		}
 
-		void update(Frametime)
+		void update(Frametime) override
 		{
-			if (Keyboard::isKeyPressed(Keyboard::Key::Left) && cPhysics->left() > 0)
-				cPhysics->velocity.x = -paddleVelocity;
-			else if (Keyboard::isKeyPressed(Keyboard::Key::Right) && cPhysics->right() < windowWidth)
-				cPhysics->velocity.x = paddleVelocity;
-			else if (cPhysics->velocity.x != 0.f)
-				cPhysics->velocity.x = {};
+			if (auto tmp = cPhysics.lock())
+			{
+				if (Keyboard::isKeyPressed(Keyboard::Key::Left) && tmp->left() > 0)
+					tmp->velocity.x = -paddleVelocity;
+				else if (Keyboard::isKeyPressed(Keyboard::Key::Right) && tmp->right() < windowWidth)
+					tmp->velocity.x = paddleVelocity;
+				else if (tmp->velocity.x != 0.f)
+					tmp->velocity.x = {};
+			}
 		}
 	};
 
@@ -244,9 +263,9 @@ namespace Arkanoid
 		{
 			auto &entity(manager.addEntity());
 
-			entity.addComponent<CPosition>(Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
-			entity.addComponent<CCircle>(this, ballRadius).setColor(Color::White);
-			entity.addComponent<CPhysics>(Vector2f{ ballRadius, ballRadius })
+			entity.addComponent<CPosition>(entity, Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
+			entity.addComponent<CCircle>(entity, this, ballRadius).setColor(Color::White);
+            entity.addComponent<CPhysics>(entity, Vector2f{ ballRadius, ballRadius })
 				.setVelocity(Vector2f{ -ballVelocity, -ballVelocity })
 				// we delegate collision process to Game 
 				.onOutOfBounds = [&entity](const Vector2f &mSide)
@@ -264,14 +283,14 @@ namespace Arkanoid
 			return entity;
 		}
 
-		Entity &createBrick(const Vector2f &mPosition)
+		Entity &createBrick(const Vector2f &position)
 		{
 			Vector2f halfSize{ blockWidth / 2.f, blockHeight / 2.f };
-			auto &entity(manager.addEntity());
+			auto &entity = manager.addEntity();
 
-			entity.addComponent<CPosition>(mPosition);
-			entity.addComponent<CPhysics>(halfSize);
-			entity.addComponent<CRectangle>(this).setColor(Color::Yellow);
+			entity.addComponent<CPosition>(entity, position);
+			entity.addComponent<CPhysics>(entity, halfSize);
+			entity.addComponent<CRectangle>(entity, this).setColor(Color::Yellow);
 
 			entity.addGroup(ArkanoidGroup::GBrick);
 
@@ -283,10 +302,10 @@ namespace Arkanoid
 			Vector2f halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
 			auto &entity(manager.addEntity());
 
-			entity.addComponent<CPosition>(Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
-			entity.addComponent<CPhysics>(halfSize);
-			entity.addComponent<CRectangle>(this).setSize({ paddleWidth *1.5f, paddleHeight * 0.5f });
-			entity.addComponent<CPaddleControl>();
+			entity.addComponent<CPosition>(entity, Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
+		    entity.addComponent<CPhysics>(entity, halfSize);
+			entity.addComponent<CRectangle>(entity, this).setSize({ paddleWidth *1.5f, paddleHeight * 0.5f });
+			entity.addComponent<CPaddleControl>(entity);
 
 			entity.addGroup(ArkanoidGroup::GPaddle);
 
@@ -352,7 +371,7 @@ namespace Arkanoid
 		{
 			currentSlice += lastFt;
 
-			// handle fixed FPS independant from CPU clock
+			// handle fixed FPS independent from CPU clock
 			// note : 
 			// if process took too much time --> execute several time the frame
 			// if process took too less time --> skip the frame
