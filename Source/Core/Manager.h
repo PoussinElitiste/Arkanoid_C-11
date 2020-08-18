@@ -11,24 +11,17 @@ namespace ECS
     class Manager
     {
     private:
-        std::vector<std::unique_ptr<Entity>> entities;
+        std::vector<std::unique_ptr<Entity>> _entities;
 
         // allow to register entities by groupID
-        std::array<EntityList, maxGroups> groupedEntities;
+        std::array<EntityList, maxGroups> _groupedEntities;
 
     public:
         void update(float mFT);
         void draw();
 
-        void addToGroup(Entity *mEntity, Group mGroup)
-        {
-            groupedEntities[mGroup].emplace_back(mEntity);
-        }
-
-        EntityList &getEntitiesByGroup(Group mGroup)
-        {
-            return groupedEntities[mGroup];
-        }
+        void addToGroup(Entity *mEntity, Group mGroup);
+        EntityList &getEntitiesByGroup(Group mGroup);
 
         void refresh();
 

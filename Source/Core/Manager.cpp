@@ -5,13 +5,23 @@ namespace ECS
 {
     void Manager::update(float mFT)
     {
-        for (auto &e : entities) 
+        for (auto &e : _entities) 
             e->update(mFT);
     }
 
     void Manager::draw()
     {
-        for (auto &e : entities) e->draw();
+        for (auto &e : _entities) e->draw();
+    }
+
+    void Manager::addToGroup(Entity *mEntity, Group mGroup)
+    {
+        _groupedEntities[mGroup].emplace_back(mEntity);
+    }
+
+    ECS::EntityList & Manager::getEntitiesByGroup(Group mGroup)
+    {
+        return _groupedEntities[mGroup];
     }
 
     void Manager::refresh()
@@ -19,7 +29,7 @@ namespace ECS
         // remove from group first
         for (auto i { 0u }; i < maxGroups; ++i)
         {
-            auto &v(groupedEntities[i]);
+            auto &v(_groupedEntities[i]);
             v.erase(
                 remove_if(begin(v), end(v),
                     [i] (Entity *mEntity) {
@@ -29,21 +39,19 @@ namespace ECS
         }
 
         // Note: remove_if sort list and push all destroyed brick at the end of the list
-        entities.erase(
-            remove_if(begin(entities), end(entities),
+        _entities.erase(
+            remove_if(begin(_entities), end(_entities),
                 [] (const std::unique_ptr<Entity> &mEntity) {
             return !mEntity->isAlive();
         }),
-            end(entities));
+            end(_entities));
     }
 
     ECS::Entity & Manager::addEntity()
     {
-        //Entity *e{ new Entity{*this} };
         std::unique_ptr<Entity> uPtr = std::make_unique<Entity>(*this);
-        entities.emplace_back(move(uPtr));
+        _entities.emplace_back(move(uPtr));
 
-        //return *uPtr;
-        return *entities.back();
+        return *_entities.back();
     }
 } // namespace ECS
