@@ -25,7 +25,16 @@ set(SFML_DIR ${ARKANOID_ROOT_DIR}/SFML-2.5.1/x64/lib/cmake/SFML)
 find_package(SFML 2 COMPONENTS graphics audio REQUIRED)
 
 # add source files
-file( GLOB SRCS ${ARKANOID_ROOT_DIR}/Source/*.c ${ARKANOID_ROOT_DIR}/Source/*.cpp ${ARKANOID_ROOT_DIR}/Source/*.h ${ARKANOID_ROOT_DIR}/Source/*.hpp )
+file( GLOB SRCS 
+    ${ARKANOID_ROOT_DIR}/Source/*.c 
+    ${ARKANOID_ROOT_DIR}/Source/*.cpp 
+    ${ARKANOID_ROOT_DIR}/Source/*.h 
+    ${ARKANOID_ROOT_DIR}/Source/*.hpp 
+    ${ARKANOID_ROOT_DIR}/Source/Core/*.c 
+    ${ARKANOID_ROOT_DIR}/Source/Core/*.cpp 
+    ${ARKANOID_ROOT_DIR}/Source/Core/*.h 
+    ${ARKANOID_ROOT_DIR}/Source/Core/*.hpp 
+    )
 
 # add executable
 add_executable( ${PROJECT_NAME} ${SRCS} )
