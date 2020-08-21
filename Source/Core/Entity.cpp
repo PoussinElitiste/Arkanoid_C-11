@@ -7,8 +7,8 @@ namespace ECS
 {
     void ECS::Entity::addGroup(Group mGroup) noexcept
     {
-        groupBitset[mGroup] = true;
-        manager.addToGroup(std::make_shared<Entity>(manager), mGroup);
+        _groupBitset[mGroup] = true;
+        _manager.addToGroup(std::make_shared<Entity>(_manager), mGroup);
     }
 
     void Entity::update(float mFT)
@@ -26,7 +26,7 @@ namespace ECS
     void Entity::delGroup(Group mGroup) noexcept
     {
         // will be used by manager during refresh
-        groupBitset[mGroup] = false;
+        _groupBitset[mGroup] = false;
     }
 
 } // namespace ECS

@@ -16,22 +16,22 @@ namespace ECS
     class Entity
     {
     private:
-        Manager &manager;
+        Manager &_manager;
         bool alive { true };
         // warranty unique instance
         std::vector<std::unique_ptr<Component>> _components;
     
         // keep a dictionary to quick access component
-        ComponentArray componentCaches;
+        ComponentArray _cachedComponents;
     
         // keep a flag table of component added -> unique component by entity
-        ComponentBitset componentBitset;
+        ComponentBitset _componentBitset;
     
         // used to define in which group Entity is registered
-        GroupBitset groupBitset;
+        GroupBitset _groupBitset;
     
     public:
-        Entity(Manager &mManager) : manager(mManager) {}
+        Entity(Manager &mManager) : _manager(mManager) {}
         void update(float mFT);
         void draw();
     
@@ -40,12 +40,12 @@ namespace ECS
     
         template<typename T> bool hasComponent() const
         {
-            return componentBitset[getComponentTypeID<T>()];
+            return _componentBitset[getComponentTypeID<T>()];
         }
     
         bool hasGroup(Group mGroup) const noexcept
         {
-            return groupBitset[mGroup];
+            return _groupBitset[mGroup];
         }
     
         // will register Entity group in manager
@@ -62,8 +62,8 @@ namespace ECS
             std::unique_ptr<T> component = std::make_unique<T>(std::forward<TArgs>(mArgs)...);
     
             // register cache component for fast access
-            componentCaches[getComponentTypeID<T>()] = std::make_shared<T>(*component);
-            componentBitset[getComponentTypeID<T>()] = true;
+            _cachedComponents[getComponentTypeID<T>()] = std::make_shared<T>(*component);
+            _componentBitset[getComponentTypeID<T>()] = true;
 
             auto &refComponent = *component;
             refComponent.init();
@@ -78,7 +78,7 @@ namespace ECS
         std::weak_ptr<T> getComponent() const
         {
             assert(hasComponent<T>());
-            return std::static_pointer_cast<T>(componentCaches[getComponentTypeID<T>()].lock());
+            return std::static_pointer_cast<T>(_cachedComponents[getComponentTypeID<T>()].lock());
         }
     };
 }
