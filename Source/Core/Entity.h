@@ -22,7 +22,7 @@ namespace ECS
         std::vector<std::unique_ptr<Component>> _components;
     
         // keep a dictionary to quick access component
-        ComponentArray componentArray;
+        ComponentArray componentCaches;
     
         // keep a flag table of component added -> unique component by entity
         ComponentBitset componentBitset;
@@ -49,13 +49,8 @@ namespace ECS
         }
     
         // will register Entity group in manager
-        // note: defined after manager class
         void addGroup(Group mGroup) noexcept;
-        void delGroup(Group mGroup) noexcept
-        {
-            // will be used by manager during refresh
-            groupBitset[mGroup] = false;
-        }
+        void delGroup(Group mGroup) noexcept;
     
         template<typename T, typename... TArgs>
         T& addComponent(TArgs &&... mArgs)
@@ -67,7 +62,7 @@ namespace ECS
             std::unique_ptr<T> component = std::make_unique<T>(std::forward<TArgs>(mArgs)...);
     
             // register component -> could be 
-            componentArray[getComponentTypeID<T>()] = component.get();
+            componentCaches[getComponentTypeID<T>()] = component.get();
             componentBitset[getComponentTypeID<T>()] = true;
     
             component->init();
@@ -83,7 +78,7 @@ namespace ECS
         T &getComponent() const
         {
             assert(hasComponent<T>());
-            return *static_cast<T*>(componentArray[getComponentTypeID<T>()]);
+            return *static_cast<T*>(componentCaches[getComponentTypeID<T>()]);
         }
     };
 }

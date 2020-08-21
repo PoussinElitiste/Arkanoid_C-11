@@ -22,4 +22,11 @@ namespace ECS
         for (auto &c : _components)
             c->draw();
     }
+
+    void Entity::delGroup(Group mGroup) noexcept
+    {
+        // will be used by manager during refresh
+        groupBitset[mGroup] = false;
+    }
+
 } // namespace ECS
