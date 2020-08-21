@@ -10,7 +10,7 @@
 #include <iostream>
 #include <bitset>
 #include <array>
-#include <assert.h>
+#include <cassert>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"

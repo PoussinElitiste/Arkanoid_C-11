@@ -24,7 +24,7 @@ namespace ECS
     constexpr std::size_t maxGroups { 32 };
     using GroupBitset = std::bitset<maxGroups>;
 
-    using EntityList = std::vector<Entity*>;
+    using EntityList = std::vector<std::weak_ptr<Entity>>;
     
     namespace Internal
     {

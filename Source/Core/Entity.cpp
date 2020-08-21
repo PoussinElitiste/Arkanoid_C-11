@@ -8,7 +8,7 @@ namespace ECS
     void ECS::Entity::addGroup(Group mGroup) noexcept
     {
         groupBitset[mGroup] = true;
-        manager.addToGroup(this, mGroup);
+        manager.addToGroup(std::make_shared<Entity>(manager), mGroup);
     }
 
     void Entity::update(float mFT)

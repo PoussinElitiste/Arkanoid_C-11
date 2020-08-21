@@ -315,6 +315,7 @@ namespace Arkanoid
 			entity.addComponent<CRectangle>(entity, this).setSize({ paddleWidth *1.5f, paddleHeight * 0.5f });
 			entity.addComponent<CPaddleControl>(entity);
 
+            
 			entity.addGroup(ArkanoidGroup::GPaddle);
 
 			return entity;
@@ -393,14 +394,21 @@ namespace Arkanoid
 				auto &bricks(manager.getEntitiesByGroup(GBrick));
 				auto &balls(manager.getEntitiesByGroup(GBall));
 
-				for (auto &ball : balls)
-				{
-					for (auto &paddle : paddles)
-						processCollisionPB(*paddle, *ball);
+				for (const auto& ball : balls)
+                    if (auto ballPtr = ball.lock())
+                    {
+                        for (const auto &paddle : paddles)
+                            if (auto paddlePtr = paddle.lock())
+                            {
+                                processCollisionPB(*paddlePtr, *ballPtr);
+                            }
 
-					for (auto &brick : bricks)
-						processCollisionBB(*brick, *ball);
-				}
+                        for (const auto &brick : bricks)
+                            if (auto brickPtr = brick.lock())
+                            {
+                                processCollisionBB(*brickPtr, *ballPtr);
+                            }
+                    }
 			}
 		}
 

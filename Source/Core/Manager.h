@@ -20,7 +20,7 @@ namespace ECS
         void update(float mFT);
         void draw();
 
-        void addToGroup(Entity *mEntity, Group mGroup);
+        void addToGroup(std::weak_ptr<Entity> mEntity, Group mGroup);
         EntityList &getEntitiesByGroup(Group mGroup);
 
         void refresh();
