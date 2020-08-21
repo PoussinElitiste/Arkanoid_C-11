@@ -61,12 +61,12 @@ namespace ECS
             // TODO: use DIP injection to automate entity reference
             std::unique_ptr<T> component = std::make_unique<T>(std::forward<TArgs>(mArgs)...);
     
-            // register component -> could be 
+            // register cache component for fast access
             componentCaches[getComponentTypeID<T>()] = std::make_shared<T>(*component);
             componentBitset[getComponentTypeID<T>()] = true;
-    
-            component->init();
+
             auto &refComponent = *component;
+            refComponent.init();
     
             // move is mandatory because unique_ptr cannot be copied
             _components.emplace_back(std::move(component));

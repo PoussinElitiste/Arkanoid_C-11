@@ -204,12 +204,12 @@ namespace Arkanoid
 			{
 				for (int iY{ 0 }; iY < countBlocksY; ++iY)
 				{
-					bricks.emplace_back(new Brick{ (iX + 1)*(blockWidth + 3) + 22, (iY + 1)*(blockHeight + 3) });
+					bricks.emplace_back(std::make_unique<Brick>((iX + 1)*(blockWidth + 3) + 22, (iY + 1)*(blockHeight + 3)));
 				}
 			}
 
-			balls.emplace_back(new Ball{ windowWidth / 2, windowHeight / 2 });
-			paddles.emplace_back(new Paddle{ windowWidth / 2, windowHeight - 50 });
+			balls.emplace_back(std::make_unique<Brick>(windowWidth / 2, windowHeight / 2));
+			paddles.emplace_back(std::make_unique<Paddle>(windowWidth / 2, windowHeight - 50));
 		}
 
 		void run()
