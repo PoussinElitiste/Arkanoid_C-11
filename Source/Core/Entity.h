@@ -62,7 +62,7 @@ namespace ECS
             std::unique_ptr<T> component = std::make_unique<T>(std::forward<TArgs>(mArgs)...);
     
             // register component -> could be 
-            componentCaches[getComponentTypeID<T>()] = component.get();
+            componentCaches[getComponentTypeID<T>()] = std::make_shared<T>(*component);
             componentBitset[getComponentTypeID<T>()] = true;
     
             component->init();
@@ -73,12 +73,12 @@ namespace ECS
     
             return refComponent;
         }
-    
+
         template<typename T>
-        T &getComponent() const
+        std::weak_ptr<T> getComponent() const
         {
             assert(hasComponent<T>());
-            return *static_cast<T*>(componentCaches[getComponentTypeID<T>()]);
+            return std::static_pointer_cast<T>(componentCaches[getComponentTypeID<T>()].lock());
         }
     };
 }

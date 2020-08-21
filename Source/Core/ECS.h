@@ -19,7 +19,7 @@ namespace ECS
     // max bit shift for 32 bit
     constexpr std::size_t maxComponents { 32 };
     using ComponentBitset = std::bitset<maxComponents>;
-    using ComponentArray = std::array<Component*, maxComponents>;
+    using ComponentArray = std::array<std::weak_ptr<Component>, maxComponents>;
 
     constexpr std::size_t maxGroups { 32 };
     using GroupBitset = std::bitset<maxGroups>;

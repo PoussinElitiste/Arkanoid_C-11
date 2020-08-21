@@ -46,7 +46,7 @@ namespace Arkanoid
 
 		void init() override
 		{
-			cPosition = std::make_shared<CPosition>(_entity.getComponent<CPosition>());
+			cPosition = _entity.getComponent<CPosition>();
 		}
 
 		CPhysics &setVelocity(const Vector2f &mVelocity)
@@ -103,8 +103,7 @@ namespace Arkanoid
 
 		void init() override
 		{
-			//if (auto tmp = _entity.lock())
-				cPosition = std::make_shared<CPosition>(_entity.getComponent<CPosition>());
+			cPosition = _entity.getComponent<CPosition>();
 
 			shape.setRadius(ballRadius);
 			shape.setFillColor(Color::Red);
@@ -142,7 +141,7 @@ namespace Arkanoid
 
 		void init() override
 		{
-			cPosition = std::make_shared<CPosition>(_entity.getComponent<CPosition>());
+			cPosition = _entity.getComponent<CPosition>();
 
 			shape.setSize({ paddleWidth, paddleHeight });
 			shape.setFillColor(Color::Red);
@@ -179,7 +178,7 @@ namespace Arkanoid
 
 		void init() override
 		{
-			cPhysics = std::make_shared<CPhysics>(_entity.getComponent<CPhysics>());
+			cPhysics = _entity.getComponent<CPhysics>();
 		}
 
 		void update(Frametime) override
@@ -198,42 +197,48 @@ namespace Arkanoid
 
 	void processCollisionPB(Entity &mPaddle, Entity &mBall)
 	{
-		auto &cpPaddle(mPaddle.getComponent<CPhysics>());
-		auto &cpBall(mBall.getComponent<CPhysics>());
-
-		if (!isIntersecting(cpPaddle, cpBall)) return;
-
-		cpBall.velocity.y = -ballVelocity;
-		if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
-		else cpBall.velocity.x = ballVelocity;
+        if (auto ballPtr = mBall.getComponent<CPhysics>().lock())
+            if (auto paddlePtr = mPaddle.getComponent<CPhysics>().lock())
+            {
+                auto &cpBall{*ballPtr};
+                auto &cpPaddle{*paddlePtr};
+                if (!isIntersecting(cpPaddle, cpBall)) return;
+                cpBall.velocity.y = -ballVelocity;
+                if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
+                else cpBall.velocity.x = ballVelocity;
+            }
 	}
 
 	void processCollisionBB(Entity &mBrick, Entity &mBall)
 	{
-		auto &cpBrick(mBrick.getComponent<CPhysics>());
-		auto &cpBall(mBall.getComponent<CPhysics>());
+        if (auto ballPtr = mBall.getComponent<CPhysics>().lock())
+            if (auto paddlePtr = mBrick.getComponent<CPhysics>().lock())
+            {
+                auto &cpBall{ *ballPtr };
+                auto &cpBrick{ *paddlePtr };
 
-		if (!isIntersecting(cpBrick, cpBall)) return;
+                if (!isIntersecting(cpBrick, cpBall)) return;
 
-		mBrick.destroy();
+                mBrick.destroy();
 
-		// test collision scenario to deduce reaction
-		float overlapLeft{ cpBall.right() - cpBrick.left() };
-		float overlapRight{ cpBrick.right() - cpBall.left() };
-		float overlapTop{ cpBall.bottom() - cpBrick.top() };
-		float overlapBottom{ cpBrick.bottom() - cpBall.top() };
+                // test collision scenario to deduce reaction
+                float overlapLeft { cpBall.right() - cpBrick.left() };
+                float overlapRight { cpBrick.right() - cpBall.left() };
+                float overlapTop { cpBall.bottom() - cpBrick.top() };
+                float overlapBottom { cpBrick.bottom() - cpBall.top() };
 
-		bool BallFromLeft = abs(overlapLeft) < abs(overlapRight);
-		bool BallFromTop = abs(overlapTop) < abs(overlapBottom);
+                bool BallFromLeft = abs(overlapLeft) < abs(overlapRight);
+                bool BallFromTop = abs(overlapTop) < abs(overlapBottom);
 
-		float minOverlapX{ BallFromLeft ? overlapLeft : overlapRight };
-		float minOverlapY{ BallFromTop ? overlapTop : overlapBottom };
+                float minOverlapX { BallFromLeft ? overlapLeft : overlapRight };
+                float minOverlapY { BallFromTop ? overlapTop : overlapBottom };
 
-		// deduce if ball repel horizontally or vertically
-		if (abs(minOverlapX) < abs(minOverlapY))
-			cpBall.velocity.x = BallFromLeft ? -ballVelocity : ballVelocity;
-		else
-			cpBall.velocity.y = BallFromTop ? -ballVelocity : ballVelocity;
+                // deduce if ball repel horizontally or vertically
+                if (abs(minOverlapX) < abs(minOverlapY))
+                    cpBall.velocity.x = BallFromLeft ? -ballVelocity : ballVelocity;
+                else
+                    cpBall.velocity.y = BallFromTop ? -ballVelocity : ballVelocity;
+            }
 	}
 
 	struct Game_v2
@@ -270,12 +275,15 @@ namespace Arkanoid
 				// we delegate collision process to Game 
 				.onOutOfBounds = [&entity](const Vector2f &mSide)
 			{
-				auto &cPhysics{ entity.getComponent<CPhysics>() };
-				if (mSide.x != 0.f)
-					cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
+                if (auto physicsPtr = entity.getComponent<CPhysics>().lock())
+                {
+                    auto &cPhysics { *physicsPtr };
+                    if (mSide.x != 0.f)
+                        cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
 
-				if (mSide.y != 0.f)
-					cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
+                    if (mSide.y != 0.f)
+                        cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
+                }
 			};
 
 			entity.addGroup(ArkanoidGroup::GBall);
