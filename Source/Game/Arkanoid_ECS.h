@@ -3,10 +3,10 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "Core/PhysicUtils.h"
-#include "Core/Component.h"
-#include "Core/Entity.h"
-#include "Core/Manager.h"
+#include "PhysicUtils.h"
+#include "Component.h"
+#include "Entity.h"
+#include "Manager.h"
 
 using namespace std;
 using namespace sf;
