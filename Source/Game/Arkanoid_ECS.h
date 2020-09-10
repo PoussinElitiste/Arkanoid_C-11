@@ -3,15 +3,13 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "PhysicUtils.h"
+#include "Physic.h"
 #include "Component.h"
 #include "Entity.h"
 #include "Manager.h"
+#include "Observer.h"
 
-using namespace std;
-using namespace sf;
 using namespace ECS;
-using namespace PhysicUtils;
 
 namespace Arkanoid
 {
@@ -22,34 +20,34 @@ namespace Arkanoid
 	//------------
 	struct CPosition : Component
 	{
-		Vector2f _position;
+		sf::Vector2f _position;
 
 		// we assume root position is the center of the shape
-        CPosition(Entity &entity, const Vector2f &mPosition);
+        CPosition(Entity &entity, const sf::Vector2f &mPosition);
 
 		float x() const noexcept { return _position.x; }
 		float y() const noexcept { return _position.y; }
 	};
 
-    CPosition::CPosition(Entity &entity, const Vector2f &mPosition)
+    CPosition::CPosition(Entity &entity, const sf::Vector2f &mPosition)
         : Component(entity), _position{ mPosition }
     {}
 
     struct CPhysics : Component
 	{
 		std::weak_ptr<CPosition> cPosition;
-		Vector2f velocity, halfSize;
+		sf::Vector2f velocity, halfSize;
 
-		function<void(const Vector2f &)> onOutOfBounds;
+		std::function<void(const sf::Vector2f &)> onOutOfBounds;
 
-		CPhysics(Entity& entity, const Vector2f &mHalfSize) : Component(entity), halfSize{ mHalfSize } {}
+		CPhysics(Entity& entity, const sf::Vector2f &mHalfSize) : Component(entity), halfSize{ mHalfSize } {}
 
 		void init() override
 		{
 			cPosition = _entity.getComponent<CPosition>();
 		}
 
-		CPhysics &setVelocity(const Vector2f &mVelocity)
+		CPhysics &setVelocity(const sf::Vector2f &mVelocity)
 		{
 			velocity = mVelocity;
 
@@ -63,11 +61,11 @@ namespace Arkanoid
 
 			if (onOutOfBounds == nullptr) return;
 
-			if (left() < 0)	onOutOfBounds(Vector2f{ 1.f, 0.f });
-			else if (right() > windowWidth)	onOutOfBounds(Vector2f{ -1.f, 0.f });
+			if (left() < 0)	onOutOfBounds(sf::Vector2f{ 1.f, 0.f });
+			else if (right() > windowWidth)	onOutOfBounds(sf::Vector2f{ -1.f, 0.f });
 
-			if (top() < 0) onOutOfBounds(Vector2f{ 0.f, 1.f });
-			else if (bottom() > windowHeight) onOutOfBounds(Vector2f{ 0.f, -1.f });
+			if (top() < 0) onOutOfBounds(sf::Vector2f{ 0.f, 1.f });
+			else if (bottom() > windowHeight) onOutOfBounds(sf::Vector2f{ 0.f, -1.f });
 		}
 
 		float x()		const noexcept 
@@ -95,7 +93,7 @@ namespace Arkanoid
 		std::weak_ptr<CPosition> cPosition;
 
 		// define the composition itself
-		CircleShape shape;
+		sf::CircleShape shape;
 		float radius;
 
 		CCircle(Entity& entity, Game_v2 *mGame, float mRadius)
@@ -106,11 +104,11 @@ namespace Arkanoid
 			cPosition = _entity.getComponent<CPosition>();
 
 			shape.setRadius(ballRadius);
-			shape.setFillColor(Color::Red);
+			shape.setFillColor(sf::Color::Red);
 			shape.setOrigin(ballRadius, ballRadius);
 		}
 
-		CCircle &setColor(Color mColor)
+		CCircle &setColor(sf::Color mColor)
 		{
 			shape.setFillColor(mColor);
 			return *this;
@@ -134,7 +132,7 @@ namespace Arkanoid
 		std::weak_ptr<CPosition> cPosition;
 
 		// define the composition itself
-		RectangleShape shape;
+		sf::RectangleShape shape;
 
 		CRectangle(Entity& entity, Game_v2 *mGame)
 			: Component(entity), game{ mGame } {}
@@ -144,17 +142,17 @@ namespace Arkanoid
 			cPosition = _entity.getComponent<CPosition>();
 
 			shape.setSize({ paddleWidth, paddleHeight });
-			shape.setFillColor(Color::Red);
+			shape.setFillColor(sf::Color::Red);
 			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
 		}
 
-		CRectangle &setColor(Color mColor)
+		CRectangle &setColor(sf::Color mColor)
 		{
 			shape.setFillColor(mColor);
 			return *this;
 		}
 
-		CRectangle &setSize(const Vector2f size)
+		CRectangle &setSize(const sf::Vector2f size)
 		{
 			shape.setSize(size);
 			return *this;
@@ -185,9 +183,9 @@ namespace Arkanoid
 		{
 			if (auto tmp = cPhysics.lock())
 			{
-				if (Keyboard::isKeyPressed(Keyboard::Key::Left) && tmp->left() > 0)
+				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && tmp->left() > 0)
 					tmp->velocity.x = -paddleVelocity;
-				else if (Keyboard::isKeyPressed(Keyboard::Key::Right) && tmp->right() < windowWidth)
+				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && tmp->right() < windowWidth)
 					tmp->velocity.x = paddleVelocity;
 				else if (tmp->velocity.x != 0.f)
 					tmp->velocity.x = {};
@@ -202,7 +200,7 @@ namespace Arkanoid
             {
                 auto &cpBall{*ballPtr};
                 auto &cpPaddle{*paddlePtr};
-                if (!isIntersecting(cpPaddle, cpBall)) return;
+                if (!Physic::isIntersecting(cpPaddle, cpBall)) return;
                 cpBall.velocity.y = -ballVelocity;
                 if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
                 else cpBall.velocity.x = ballVelocity;
@@ -217,7 +215,7 @@ namespace Arkanoid
                 auto &cpBall{ *ballPtr };
                 auto &cpBrick{ *paddlePtr };
 
-                if (!isIntersecting(cpBrick, cpBall)) return;
+                if (!Physic::isIntersecting(cpBrick, cpBall)) return;
 
                 mBrick.destroy();
 
@@ -251,7 +249,7 @@ namespace Arkanoid
 			GBall
 		};
 
-		RenderWindow window{ { windowWidth, windowHeight }, "Arkanoid - components" };
+		sf::RenderWindow window{ { windowWidth, windowHeight }, "Arkanoid - components" };
 
 		Frametime lastFt{ 0.f };
 
@@ -263,17 +261,19 @@ namespace Arkanoid
 		// handle all entities
 		Manager manager;
 
+        Event::Subject test;
+
 		// factory
 		Entity &createBall()
 		{
 			auto &entity(manager.addEntity());
 
-			entity.addComponent<CPosition>(entity, Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
-			entity.addComponent<CCircle>(entity, this, ballRadius).setColor(Color::White);
-            entity.addComponent<CPhysics>(entity, Vector2f{ ballRadius, ballRadius })
-				.setVelocity(Vector2f{ -ballVelocity, -ballVelocity })
+			entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
+			entity.addComponent<CCircle>(entity, this, ballRadius).setColor(sf::Color::White);
+            entity.addComponent<CPhysics>(entity, sf::Vector2f{ ballRadius, ballRadius })
+				.setVelocity(sf::Vector2f{ -ballVelocity, -ballVelocity })
 				// we delegate collision process to Game 
-				.onOutOfBounds = [&entity](const Vector2f &mSide)
+				.onOutOfBounds = [&entity](const sf::Vector2f &mSide)
 			{
                 if (auto physicsPtr = entity.getComponent<CPhysics>().lock())
                 {
@@ -291,14 +291,14 @@ namespace Arkanoid
 			return entity;
 		}
 
-		Entity &createBrick(const Vector2f &position)
+		Entity &createBrick(const sf::Vector2f &position)
 		{
-			Vector2f halfSize{ blockWidth / 2.f, blockHeight / 2.f };
+			sf::Vector2f halfSize{ blockWidth / 2.f, blockHeight / 2.f };
 			auto &entity = manager.addEntity();
 
 			entity.addComponent<CPosition>(entity, position);
 			entity.addComponent<CPhysics>(entity, halfSize);
-			entity.addComponent<CRectangle>(entity, this).setColor(Color::Yellow);
+			entity.addComponent<CRectangle>(entity, this).setColor(sf::Color::Yellow);
 
 			entity.addGroup(ArkanoidGroup::GBrick);
 
@@ -307,10 +307,10 @@ namespace Arkanoid
 
 		Entity &createPaddle()
 		{
-			Vector2f halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
+			sf::Vector2f halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
 			auto &entity(manager.addEntity());
 
-			entity.addComponent<CPosition>(entity, Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
+			entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
 		    entity.addComponent<CPhysics>(entity, halfSize);
 			entity.addComponent<CRectangle>(entity, this).setSize({ paddleWidth *1.5f, paddleHeight * 0.5f });
 			entity.addComponent<CPaddleControl>(entity);
@@ -330,7 +330,7 @@ namespace Arkanoid
 			createBall();
 			for (int iX{ 0 }; iX < countBlocksX; ++iX)
 				for (int iY{ 0 }; iY < countBlocksY; ++iY)
-					createBrick(Vector2f{ (iX + 1)*(blockWidth + 3) + 22, (iY + 1)*(blockHeight + 3) });
+					createBrick(sf::Vector2f{ (iX + 1)*(blockWidth + 3) + 22, (iY + 1)*(blockHeight + 3) });
 		}
 
 		void run()
@@ -339,41 +339,41 @@ namespace Arkanoid
 
 			while (running)
 			{
-				auto timePoint1(chrono::high_resolution_clock::now());
-				window.clear(Color::Black);
+				auto timePoint1(std::chrono::high_resolution_clock::now());
+				window.clear(sf::Color::Black);
 
 				inputPhase();
 				updatePhase();
 				drawPhase();
 
-				auto timePoint2(chrono::high_resolution_clock::now());
+				auto timePoint2(std::chrono::high_resolution_clock::now());
 
 				auto elapseTime(timePoint2 - timePoint1);
 
-				Frametime ft{ chrono::duration_cast<chrono::duration<float, milli>>(elapseTime).count() };
+				Frametime ft{ std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(elapseTime).count() };
 
 				lastFt = ft;
 
 				auto ftSeconds(ft / 1000.f);
 				auto fps(1.f / ftSeconds);
 
-				window.setTitle("FT: " + to_string(ft) + "\tFPS" + to_string(fps));
+				window.setTitle("FT: " + std::to_string(ft) + "\tFPS" + std::to_string(fps));
 			}
 		}
 		void inputPhase()
 		{
 			// SFML tips: prevent window freezing
-			Event event;
+			sf::Event event;
 			while (window.pollEvent(event))
 			{
-				if (event.type == Event::Closed)
+				if (event.type == sf::Event::Closed)
 				{
 					window.close();
 					break;
 				}
 			}
 
-			if (Keyboard::isKeyPressed(Keyboard::Key::Escape)) running = false;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) running = false;
 		}
 
 		void updatePhase()
@@ -417,7 +417,7 @@ namespace Arkanoid
 			manager.draw();
 			window.display();
 		}
-		void render(const Drawable &mDrawable) { window.draw(mDrawable); }
+		void render(const sf::Drawable &mDrawable) { window.draw(mDrawable); }
 	};
 
 	void CCircle::draw() { game->render(shape); }
