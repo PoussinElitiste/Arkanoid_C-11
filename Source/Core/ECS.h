@@ -5,12 +5,14 @@
 #include <iostream>
 #include <bitset>
 #include <array>
+#include <vector>
 
 namespace ECS
 {
     // EC implementations
     struct Component;
     class Entity;
+    class System;
     class Manager;
     
     using ComponenID = std::size_t;

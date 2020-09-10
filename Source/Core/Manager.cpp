@@ -1,8 +1,14 @@
+
 #include "Manager.h"
+
+#include "System.h"
 #include "Entity.h"
 
 namespace ECS
 {
+    Manager::~Manager()
+    = default;
+
     void Manager::update(float mFT)
     {
         for (auto &e : _entities) 

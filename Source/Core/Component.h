@@ -11,6 +11,7 @@ namespace ECS
         virtual ~Component() = default;
 
         virtual void init() {}
+        /// TODO: migrate logic to dedicated systems
         virtual void update(float) {}
         virtual void draw() {}
     };
