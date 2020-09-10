@@ -1,6 +1,6 @@
 #pragma once
 
-namespace PhysicUtils
+namespace Physic
 {
 	template<class T1, class T2> bool isIntersecting(T1& mA, T2& mB) noexcept
 	{
