@@ -8,7 +8,9 @@ mkdir Build
 
 echo "step 3 - generate project in Build directory"
 cd Build/
-cmake ../ -A x64 -T v141
+# v141 -> VS 2017
+# v142 -> VS 2019
+cmake -A x64 -T v142 ../
 #make
 #make install
 

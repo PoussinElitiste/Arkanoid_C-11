@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.15)
 
 #Project name and version
-project(Arkanoid VERSION 0.1)
+project(Arkanoid VERSION 0.1 LANGUAGES CXX)
 
 #set variable 
 set(ARKANOID_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
