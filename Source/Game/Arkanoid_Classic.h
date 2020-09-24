@@ -14,23 +14,19 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "Core/PhysicUtils.h"
-
-using namespace std;
-using namespace sf;
-using namespace PhysicUtils;
+#include "Physic.h"
 
 namespace Arkanoid
 {
 	struct Ball
 	{
-		CircleShape shape;
-		Vector2f velocity{ -ballVelocity, -ballVelocity };
+		sf::CircleShape shape;
+		sf::Vector2f velocity{ -ballVelocity, -ballVelocity };
 		Ball(float mX, float mY)
 		{
 			shape.setPosition(mX, mY);
 			shape.setRadius(ballRadius);
-			shape.setFillColor(Color::Red);
+			shape.setFillColor(sf::Color::Red);
 			shape.setOrigin(ballRadius, ballRadius);
 		}
 
@@ -67,7 +63,7 @@ namespace Arkanoid
 
 	struct Rectangle
 	{
-		RectangleShape shape;
+		sf::RectangleShape shape;
 
 		float x()		const noexcept { return shape.getPosition().x; }
 		float y()		const noexcept { return shape.getPosition().y; }
@@ -79,12 +75,12 @@ namespace Arkanoid
 
 	struct Paddle : public Rectangle
 	{
-		Vector2f velocity;
+		sf::Vector2f velocity;
 		Paddle(float mX, float mY)
 		{
 			shape.setPosition(mX, mY);
 			shape.setSize({ paddleWidth, paddleHeight });
-			shape.setFillColor(Color::Red);
+			shape.setFillColor(sf::Color::Cyan);
 			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
 		}
 
@@ -92,11 +88,11 @@ namespace Arkanoid
 		{
 			shape.move(velocity * mFT);
 
-			if (Keyboard::isKeyPressed(Keyboard::Key::Left) && left() > 0)
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && left() > 0)
 			{
 				velocity.x = -paddleVelocity;
 			}
-			else if (Keyboard::isKeyPressed(Keyboard::Key::Right) && right() < windowWidth)
+			else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && right() < windowWidth)
 			{
 				velocity.x = paddleVelocity;
 			}
@@ -109,22 +105,22 @@ namespace Arkanoid
 
 	struct Brick : public Rectangle
 	{
-		Vector2f velocity;
+		sf::Vector2f velocity;
 
 		bool destroyed{ false };
 
 		Brick(float mX, float mY)
 		{
 			shape.setPosition(mX, mY);
-			shape.setSize({ paddleWidth, paddleHeight });
-			shape.setFillColor(Color::Yellow);
-			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
+			shape.setSize({ blockWidth, blockHeight });
+			shape.setFillColor(sf::Color::Yellow);
+			shape.setOrigin(blockWidth * .5f, blockHeight * .5f);
 		}
 	};
 
 	void testCollisionPB(Paddle &mPaddle, Ball &mBall)
 	{
-		if (!isIntersecting(mPaddle, mBall))
+		if (!Physic::isIntersecting(mPaddle, mBall))
 		{
 			return;
 		}
@@ -142,7 +138,7 @@ namespace Arkanoid
 
 	void testCollisionBB(Brick &mBrick, Ball &mBall)
 	{
-		if (!isIntersecting(mBrick, mBall))
+		if (!Physic::isIntersecting(mBrick, mBall))
 		{
 			return;
 		}
@@ -171,7 +167,7 @@ namespace Arkanoid
 
 	struct Game
 	{
-		RenderWindow window{ { windowWidth, windowHeight }, "Arkanoid - 1" };
+		sf::RenderWindow window{ { windowWidth, windowHeight }, "Arkanoid - 1" };
 
 		Frametime lastFt{ 0.f };
 
@@ -179,13 +175,9 @@ namespace Arkanoid
 		Frametime currentSlice{ 0.f };
 
 		bool running{ false };
-		vector<unique_ptr<Ball>> balls;
-		//Ball ball{ windowWidth / 2, windowHeight / 2 };
-
-		vector<unique_ptr<Paddle>> paddles;
-		//Paddle paddle{ windowWidth / 2, windowHeight - 50 };
-
-		vector<unique_ptr<Brick>> bricks;
+		std::vector<std::unique_ptr<Ball>> balls;
+		std::vector<std::unique_ptr<Paddle>> paddles;
+		std::vector<std::unique_ptr<Brick>> bricks;
 
 		Game()
 		{
@@ -208,8 +200,8 @@ namespace Arkanoid
 				}
 			}
 
-			balls.emplace_back(std::make_unique<Brick>(windowWidth / 2, windowHeight / 2));
-			paddles.emplace_back(std::make_unique<Paddle>(windowWidth / 2, windowHeight - 50));
+			balls.emplace_back(std::make_unique<Ball>(windowWidth * 0.5f, windowHeight * 0.5f));
+			paddles.emplace_back(std::make_unique<Paddle>(windowWidth * 0.5f, windowHeight - 50.f));
 		}
 
 		void run()
@@ -218,41 +210,41 @@ namespace Arkanoid
 
 			while (true)
 			{
-				auto timePoint1(chrono::high_resolution_clock::now());
-				window.clear(Color::Black);
+				auto timePoint1(std::chrono::high_resolution_clock::now());
+				window.clear(sf::Color::Black);
 
 				inputPhase();
 				updatePhase();
 				drawPhase();
 
-				auto timePoint2(chrono::high_resolution_clock::now());
+				auto timePoint2(std::chrono::high_resolution_clock::now());
 
 				auto elapseTime(timePoint2 - timePoint1);
 
-				Frametime ft{ chrono::duration_cast<chrono::duration<float, milli>>(elapseTime).count() };
+				Frametime ft{ std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(elapseTime).count() };
 
 				lastFt = ft;
 
 				auto ftSeconds(ft / 1000.f);
 				auto fps(1.f / ftSeconds);
 
-				window.setTitle("FT: " + to_string(ft) + "\tFPS" + to_string(fps));
+				window.setTitle("FT: " + std::to_string(ft) + "\tFPS" + std::to_string(fps));
 			}
 		}
 		void inputPhase()
 		{
 			// SFML tips: prevent window freezing
-			Event event;
-			while (window.pollEvent(event))
+			sf::Event evt;
+			while (window.pollEvent(evt))
 			{
-				if (event.type == Event::Closed)
+				if (evt.type == sf::Event::Closed)
 				{
 					window.close();
 					break;
 				}
 			}
 
-			if (Keyboard::isKeyPressed(Keyboard::Key::Escape))
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape))
 			{
 				running = false;
 			}
@@ -290,7 +282,7 @@ namespace Arkanoid
 
 				// Note: remove_if sort list and push all destroyed brick at the end of the list
 				//  -> update several time on the same frame
-				bricks.erase(remove_if(begin(bricks), end(bricks), [](const unique_ptr<Brick> &mBrick) {
+				bricks.erase(remove_if(begin(bricks), end(bricks), [](const std::unique_ptr<Brick> &mBrick) {
 					return mBrick->destroyed;
 				}), end(bricks));
 			}
@@ -303,7 +295,7 @@ namespace Arkanoid
 				window.draw(ball->shape);
 			}
 
-			for (auto &paddle : balls)
+			for (auto &paddle : paddles)
 			{
 				window.draw(paddle->shape);
 			}
