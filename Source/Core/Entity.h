@@ -31,7 +31,7 @@ namespace ECS
         GroupBitset _groupBitset;
     
     public:
-        Entity(Manager &mManager) : _manager(mManager) {}
+        Entity(Manager& mManager) : _manager(mManager) {}
         void update(float mFT);
         void draw();
     
@@ -59,26 +59,28 @@ namespace ECS
             assert(!hasComponent<T>());
     
             // TODO: use DIP injection to automate entity reference
-            std::unique_ptr<T> component = std::make_unique<T>(std::forward<TArgs>(mArgs)...);
+            std::unique_ptr<T> componentPtr = std::make_unique<T>(std::forward<TArgs>(mArgs)...);
+
+            T & component = *componentPtr.get();
+
+            // move is mandatory because unique_ptr cannot be copied
+            _components.emplace_back(std::move(componentPtr));
     
             // register cache component for fast access
-            _cachedComponents[getComponentTypeID<T>()] = std::make_shared<T>(*component);
+            _cachedComponents[getComponentTypeID<T>()] = &component;
             _componentBitset[getComponentTypeID<T>()] = true;
 
-            auto &refComponent = *component;
-            refComponent.init();
-    
-            // move is mandatory because unique_ptr cannot be copied
-            _components.emplace_back(std::move(component));
-    
-            return refComponent;
+            component.init();
+            
+            return component;
         }
 
         template<typename T>
-        std::weak_ptr<T> getComponent() const
+        T * getComponent() const
         {
             assert(hasComponent<T>());
-            return std::static_pointer_cast<T>(_cachedComponents[getComponentTypeID<T>()].lock());
+            auto cachedCmp = _cachedComponents[getComponentTypeID<T>()];
+            return static_cast<T*>(cachedCmp);
         }
     };
 }

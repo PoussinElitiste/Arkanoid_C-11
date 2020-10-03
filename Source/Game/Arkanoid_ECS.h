@@ -23,19 +23,19 @@ namespace Arkanoid
 		sf::Vector2f _position;
 
 		// we assume root position is the center of the shape
-        CPosition(Entity &entity, const sf::Vector2f &mPosition);
+        CPosition(Entity &entity, const sf::Vector2f &position);
 
 		float x() const noexcept { return _position.x; }
 		float y() const noexcept { return _position.y; }
 	};
 
-    CPosition::CPosition(Entity &entity, const sf::Vector2f &mPosition)
-        : Component(entity), _position{ mPosition }
+    CPosition::CPosition(Entity &entity, const sf::Vector2f &position)
+        : Component(entity), _position{ position }
     {}
 
     struct CPhysics : Component
 	{
-		std::weak_ptr<CPosition> cPosition;
+		CPosition *cPosition;
 		sf::Vector2f velocity, halfSize;
 
 		std::function<void(const sf::Vector2f &)> onOutOfBounds;
@@ -56,8 +56,8 @@ namespace Arkanoid
 
 		void update(Frametime mFT) override
 		{
-			if (auto tmp = cPosition.lock())
-				tmp->_position += velocity * mFT;
+			//if (auto tmp = cPosition.lock())
+			cPosition->_position += velocity * mFT;
 
 			if (onOutOfBounds == nullptr) return;
 
@@ -70,15 +70,15 @@ namespace Arkanoid
 
 		float x()		const noexcept 
 		{ 
-			if (auto tmp = cPosition.lock())
-				return tmp->x();
-			return 0.f;
+			//if (auto tmp = cPosition.lock())
+				return cPosition->x();
+			//return 0.f;
 		}
 		float y()		const noexcept 
 		{ 
-			if (auto tmp = cPosition.lock())
-				return tmp->y();
-			return 0.f;
+			//if (auto tmp = cPosition.lock())
+				return cPosition->y();
+			//return 0.f;
 		}
 		float left()	const noexcept { return x() - halfSize.x; }
 		float right()	const noexcept { return x() + halfSize.x; }
@@ -90,7 +90,7 @@ namespace Arkanoid
 	{
 		// TODO: use DIP injection
 		Game_v2 *game{ nullptr };
-		std::weak_ptr<CPosition> cPosition;
+		CPosition * cPosition;
 
 		// define the composition itself
 		sf::CircleShape shape;
@@ -117,8 +117,8 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			if (auto tmp = cPosition.lock())
-				shape.setPosition(tmp->_position);
+			//if (auto tmp = cPosition.lock())
+				shape.setPosition(cPosition->_position);
 		}
 
 		// defined after Game class
@@ -129,7 +129,6 @@ namespace Arkanoid
 	{
 		// TODO: use DIP injection
 		Game_v2 *game{ nullptr };
-		std::weak_ptr<CPosition> cPosition;
 
 		// define the composition itself
 		sf::RectangleShape shape;
@@ -139,8 +138,6 @@ namespace Arkanoid
 
 		void init() override
 		{
-			cPosition = _entity.getComponent<CPosition>();
-
 			shape.setSize({ paddleWidth, paddleHeight });
 			shape.setFillColor(sf::Color::Red);
 			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
@@ -160,7 +157,7 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			if (auto tmp = cPosition.lock())
+			if (auto tmp = _entity.getComponent<CPosition>())
 				shape.setPosition(tmp->_position);
 		}
 
@@ -170,7 +167,7 @@ namespace Arkanoid
 
 	struct CPaddleControl : Component
 	{
-		std::weak_ptr<CPhysics> cPhysics;
+		CPhysics *cPhysics;
 
         CPaddleControl(Entity &entity) : Component(entity) {}
 
@@ -181,7 +178,7 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			if (auto tmp = cPhysics.lock())
+			if (auto tmp = cPhysics)
 			{
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && tmp->left() > 0)
 					tmp->velocity.x = -paddleVelocity;
@@ -195,8 +192,8 @@ namespace Arkanoid
 
 	void processCollisionPB(Entity &mPaddle, Entity &mBall)
 	{
-        if (auto ballPtr = mBall.getComponent<CPhysics>().lock())
-            if (auto paddlePtr = mPaddle.getComponent<CPhysics>().lock())
+        if (auto ballPtr = mBall.getComponent<CPhysics>())
+            if (auto paddlePtr = mPaddle.getComponent<CPhysics>())
             {
                 auto &cpBall{*ballPtr};
                 auto &cpPaddle{*paddlePtr};
@@ -209,8 +206,8 @@ namespace Arkanoid
 
 	void processCollisionBB(Entity &mBrick, Entity &mBall)
 	{
-        if (auto ballPtr = mBall.getComponent<CPhysics>().lock())
-            if (auto paddlePtr = mBrick.getComponent<CPhysics>().lock())
+        if (auto ballPtr = mBall.getComponent<CPhysics>())
+            if (auto paddlePtr = mBrick.getComponent<CPhysics>())
             {
                 auto &cpBall{ *ballPtr };
                 auto &cpBrick{ *paddlePtr };
@@ -275,7 +272,7 @@ namespace Arkanoid
 				// we delegate collision process to Game 
 				.onOutOfBounds = [&entity](const sf::Vector2f &mSide)
 			{
-                if (auto physicsPtr = entity.getComponent<CPhysics>().lock())
+                if (auto physicsPtr = entity.getComponent<CPhysics>())
                 {
                     auto &cPhysics { *physicsPtr };
                     if (mSide.x != 0.f)
@@ -395,18 +392,18 @@ namespace Arkanoid
 				auto &balls(manager.getEntitiesByGroup(GBall));
 
 				for (const auto& ball : balls)
-                    if (auto ballPtr = ball.lock())
+                    //if (auto ballPtr = ball.lock())
                     {
                         for (const auto &paddle : paddles)
-                            if (auto paddlePtr = paddle.lock())
+                            //if (auto paddlePtr = paddle.lock())
                             {
-                                processCollisionPB(*paddlePtr, *ballPtr);
+                                processCollisionPB(*paddle, *ball);
                             }
 
                         for (const auto &brick : bricks)
-                            if (auto brickPtr = brick.lock())
+                            //if (auto brickPtr = brick.lock())
                             {
-                                processCollisionBB(*brickPtr, *ballPtr);
+                                processCollisionBB(*brick, *ball);
                             }
                     }
 			}
@@ -417,9 +414,15 @@ namespace Arkanoid
 			manager.draw();
 			window.display();
 		}
-		void render(const sf::Drawable &mDrawable) { window.draw(mDrawable); }
+		void render(const sf::Drawable &mDrawable) 
+		{ 
+			window.draw(mDrawable); 
+		}
 	};
 
 	void CCircle::draw() { game->render(shape); }
-	void CRectangle::draw() { game->render(shape); }
+	void CRectangle::draw() 
+	{ 
+		game->render(shape); 
+	}
 }

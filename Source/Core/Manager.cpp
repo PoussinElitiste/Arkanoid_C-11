@@ -20,14 +20,14 @@ namespace ECS
         for (auto &e : _entities) e->draw();
     }
 
-    void Manager::addToGroup(std::weak_ptr<Entity> mEntity, Group mGroup)
+    void Manager::addToGroup(Entity * entity, Group group)
     {
-        _groupedEntities[mGroup].emplace_back(mEntity);
+        _groupedEntities[group].emplace_back(entity);
     }
 
-    ECS::EntityList & Manager::getEntitiesByGroup(Group mGroup)
+    ECS::EntityList & Manager::getEntitiesByGroup(Group group)
     {
-        return _groupedEntities[mGroup];
+        return _groupedEntities[group];
     }
 
     void Manager::refresh()
@@ -38,11 +38,11 @@ namespace ECS
             auto &v(_groupedEntities[i]);
             v.erase(
                 remove_if(begin(v), end(v),
-                    [i] (std::weak_ptr<Entity> entity) 
+                    [i] (Entity *entity) 
                 {
-                    if (auto ptr = entity.lock())
+                    //if (auto ptr = entity.lock())
                     {
-                        return !ptr->isAlive() || !ptr->hasGroup(i);
+                        return !entity->isAlive() || !entity->hasGroup(i);
                     }
                     // cleanup null entry
 					// TODO: add warning
@@ -62,8 +62,10 @@ namespace ECS
 
     ECS::Entity & Manager::addEntity()
     {
-        _entities.emplace_back(std::make_unique<Entity>(*this));
+        std::unique_ptr<Entity> entityPtr = std::make_unique<Entity>(*this);
+        ECS::Entity& entity = *entityPtr.get();
+        _entities.emplace_back(std::move(entityPtr));
 
-        return *_entities.back();
+        return entity;
     }
 } // namespace ECS

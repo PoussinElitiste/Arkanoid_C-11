@@ -8,7 +8,10 @@ namespace ECS
     void ECS::Entity::addGroup(Group mGroup) noexcept
     {
         _groupBitset[mGroup] = true;
-        _manager.addToGroup(std::make_shared<Entity>(_manager), mGroup);
+
+        //std::weak_ptr<Entity> entityRef = std::make_shared<Entity>(this);
+        // note: for the moment I can't pass weak ptr of Entity because entity contain list of unique_ptr component
+        _manager.addToGroup(this, mGroup);
     }
 
     void Entity::update(float mFT)
