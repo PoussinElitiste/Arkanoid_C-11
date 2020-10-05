@@ -35,7 +35,6 @@ namespace Arkanoid
 
     struct CPhysics : Component
 	{
-		CPosition* cPosition = {};
 		sf::Vector2f velocity, halfSize;
 
 		std::function<void(const sf::Vector2f &)> onOutOfBounds;
@@ -44,7 +43,6 @@ namespace Arkanoid
 
 		void init() override
 		{
-			cPosition = _entity.getComponent<CPosition>();
 		}
 
 		CPhysics &setVelocity(const sf::Vector2f &mVelocity)
@@ -56,8 +54,7 @@ namespace Arkanoid
 
 		void update(Frametime mFT) override
 		{
-			//if (auto tmp = cPosition.lock())
-			cPosition->_position += velocity * mFT;
+			_entity.getComponent<CPosition>()->_position += velocity * mFT;
 
 			if (onOutOfBounds == nullptr) return;
 
@@ -70,12 +67,12 @@ namespace Arkanoid
 
 		float x() const noexcept 
 		{ 
-			return cPosition->x();
+			return _entity.getComponent<CPosition>()->x();
 		}
 
 		float y() const noexcept 
 		{
-			return cPosition->y();
+			return _entity.getComponent<CPosition>()->y();
 		}
 
 		float left()	const noexcept { return x() - halfSize.x; }
@@ -88,7 +85,6 @@ namespace Arkanoid
 	{
 		// TODO: use DIP injection
 		Game_v2* game = {};
-		CPosition* cPosition = {};
 
 		// define the composition itself
 		sf::CircleShape shape;
@@ -99,8 +95,6 @@ namespace Arkanoid
 
 		void init() override
 		{
-			cPosition = _entity.getComponent<CPosition>();
-
 			shape.setRadius(ballRadius);
 			shape.setFillColor(sf::Color::Red);
 			shape.setOrigin(ballRadius, ballRadius);
@@ -111,11 +105,10 @@ namespace Arkanoid
 			shape.setFillColor(mColor);
 			return *this;
 		}
-        
 
 		void update(Frametime) override
 		{
-			shape.setPosition(cPosition->_position);
+			shape.setPosition(_entity.getComponent<CPosition>()->_position);
 		}
 
 		// defined after Game class
@@ -153,9 +146,8 @@ namespace Arkanoid
 		}
 
 		void update(Frametime) override
-		{
-			if (auto tmp = _entity.getComponent<CPosition>())
-				shape.setPosition(tmp->_position);
+        {
+            shape.setPosition(_entity.getComponent<CPosition>()->_position);
 		}
 
 		// defined after Game class
@@ -164,18 +156,11 @@ namespace Arkanoid
 
 	struct CPaddleControl : Component
 	{
-		CPhysics* cPhysics = {};
-
         CPaddleControl(Entity &entity) : Component(entity) {}
-
-		void init() override
-		{
-			cPhysics = _entity.getComponent<CPhysics>();
-		}
 
 		void update(Frametime) override
 		{
-			if (auto tmp = cPhysics)
+			if (auto tmp = _entity.getComponent<CPhysics>())
 			{
 				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && tmp->left() > 0)
 					tmp->velocity.x = -paddleVelocity;
