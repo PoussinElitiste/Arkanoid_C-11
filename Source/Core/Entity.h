@@ -76,10 +76,10 @@ namespace ECS
         }
 
         template<typename T>
-        T * getComponent() const
+        T& getComponent() const
         {
             assert(hasComponent<T>());
-            return static_cast<T*>(_cachedComponents[getComponentTypeID<T>()]);
+            return static_cast<T&>(*_cachedComponents[getComponentTypeID<T>()]);
         }
     };
 }

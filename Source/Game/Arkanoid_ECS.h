@@ -54,7 +54,7 @@ namespace Arkanoid
 
 		void update(Frametime mFT) override
 		{
-			_entity.getComponent<CPosition>()->_position += velocity * mFT;
+			_entity.getComponent<CPosition>()._position += velocity * mFT;
 
 			if (onOutOfBounds == nullptr) return;
 
@@ -67,12 +67,12 @@ namespace Arkanoid
 
 		float x() const noexcept 
 		{ 
-			return _entity.getComponent<CPosition>()->x();
+			return _entity.getComponent<CPosition>().x();
 		}
 
 		float y() const noexcept 
 		{
-			return _entity.getComponent<CPosition>()->y();
+			return _entity.getComponent<CPosition>().y();
 		}
 
 		float left()	const noexcept { return x() - halfSize.x; }
@@ -108,7 +108,7 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			shape.setPosition(_entity.getComponent<CPosition>()->_position);
+			shape.setPosition(_entity.getComponent<CPosition>()._position);
 		}
 
 		// defined after Game class
@@ -147,7 +147,7 @@ namespace Arkanoid
 
 		void update(Frametime) override
         {
-            shape.setPosition(_entity.getComponent<CPosition>()->_position);
+            shape.setPosition(_entity.getComponent<CPosition>()._position);
 		}
 
 		// defined after Game class
@@ -160,62 +160,57 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			if (auto tmp = _entity.getComponent<CPhysics>())
-			{
-				if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && tmp->left() > 0)
-					tmp->velocity.x = -paddleVelocity;
-				else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && tmp->right() < windowWidth)
-					tmp->velocity.x = paddleVelocity;
-				else if (tmp->velocity.x != 0.f)
-					tmp->velocity.x = {};
-			}
+			auto& tmp = _entity.getComponent<CPhysics>();
+			
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && tmp.left() > 0)
+                tmp.velocity.x = -paddleVelocity;
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && tmp.right() < windowWidth)
+                tmp.velocity.x = paddleVelocity;
+            else if (tmp.velocity.x != 0.f)
+                tmp.velocity.x = {};
+			
 		}
 	};
 
 	void processCollisionPB(Entity &mPaddle, Entity &mBall)
 	{
-        if (auto ballPtr = mBall.getComponent<CPhysics>())
-            if (auto paddlePtr = mPaddle.getComponent<CPhysics>())
-            {
-                auto &cpBall{*ballPtr};
-                auto &cpPaddle{*paddlePtr};
-                if (!Physic::isIntersecting(cpPaddle, cpBall)) return;
-                cpBall.velocity.y = -ballVelocity;
-                if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
-                else cpBall.velocity.x = ballVelocity;
-            }
+        auto & cpBall = mBall.getComponent<CPhysics>();
+        auto & cpPaddle = mPaddle.getComponent<CPhysics>();
+        
+
+            if (!Physic::isIntersecting(cpPaddle, cpBall)) return;
+            cpBall.velocity.y = -ballVelocity;
+            if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
+            else cpBall.velocity.x = ballVelocity;
+        
 	}
 
 	void processCollisionBB(Entity &mBrick, Entity &mBall)
 	{
-        if (auto ballPtr = mBall.getComponent<CPhysics>())
-            if (auto paddlePtr = mBrick.getComponent<CPhysics>())
-            {
-                auto &cpBall{ *ballPtr };
-                auto &cpBrick{ *paddlePtr };
+		auto& cpBall = mBall.getComponent<CPhysics>();
+		auto& cpBrick = mBrick.getComponent<CPhysics>();
 
-                if (!Physic::isIntersecting(cpBrick, cpBall)) return;
+        if (!Physic::isIntersecting(cpBrick, cpBall)) return;
 
-                mBrick.destroy();
+        mBrick.destroy();
 
-                // test collision scenario to deduce reaction
-                float overlapLeft { cpBall.right() - cpBrick.left() };
-                float overlapRight { cpBrick.right() - cpBall.left() };
-                float overlapTop { cpBall.bottom() - cpBrick.top() };
-                float overlapBottom { cpBrick.bottom() - cpBall.top() };
+        // test collision scenario to deduce reaction
+        float overlapLeft { cpBall.right() - cpBrick.left() };
+        float overlapRight { cpBrick.right() - cpBall.left() };
+        float overlapTop { cpBall.bottom() - cpBrick.top() };
+        float overlapBottom { cpBrick.bottom() - cpBall.top() };
 
-                bool BallFromLeft = abs(overlapLeft) < abs(overlapRight);
-                bool BallFromTop = abs(overlapTop) < abs(overlapBottom);
+        bool BallFromLeft = abs(overlapLeft) < abs(overlapRight);
+        bool BallFromTop = abs(overlapTop) < abs(overlapBottom);
 
-                float minOverlapX { BallFromLeft ? overlapLeft : overlapRight };
-                float minOverlapY { BallFromTop ? overlapTop : overlapBottom };
+        float minOverlapX { BallFromLeft ? overlapLeft : overlapRight };
+        float minOverlapY { BallFromTop ? overlapTop : overlapBottom };
 
-                // deduce if ball repel horizontally or vertically
-                if (abs(minOverlapX) < abs(minOverlapY))
-                    cpBall.velocity.x = BallFromLeft ? -ballVelocity : ballVelocity;
-                else
-                    cpBall.velocity.y = BallFromTop ? -ballVelocity : ballVelocity;
-            }
+        // deduce if ball repel horizontally or vertically
+        if (abs(minOverlapX) < abs(minOverlapY))
+            cpBall.velocity.x = BallFromLeft ? -ballVelocity : ballVelocity;
+        else
+            cpBall.velocity.y = BallFromTop ? -ballVelocity : ballVelocity;
 	}
 
 	struct Game_v2
@@ -254,15 +249,12 @@ namespace Arkanoid
 				// we delegate collision process to Game 
 				.onOutOfBounds = [&entity](const sf::Vector2f &mSide)
 			{
-                if (auto physicsPtr = entity.getComponent<CPhysics>())
-                {
-                    auto &cPhysics { *physicsPtr };
-                    if (mSide.x != 0.f)
-                        cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
+                auto& cPhysics { entity.getComponent<CPhysics>() };
+                if (mSide.x != 0.f)
+					cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
 
-                    if (mSide.y != 0.f)
-                        cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
-                }
+                if (mSide.y != 0.f)
+					cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
 			};
 
 			entity.addGroup(ArkanoidGroup::GBall);
