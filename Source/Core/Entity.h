@@ -22,7 +22,7 @@ namespace ECS
         std::vector<std::unique_ptr<Component>> _components;
     
         // keep a dictionary to quick access component
-        ComponentArray _cachedComponents;
+        ComponentArray _cachedComponents = {};
     
         // keep a flag table of component added -> unique component by entity
         ComponentBitset _componentBitset;
@@ -79,8 +79,7 @@ namespace ECS
         T * getComponent() const
         {
             assert(hasComponent<T>());
-            auto cachedCmp = _cachedComponents[getComponentTypeID<T>()];
-            return static_cast<T*>(cachedCmp);
+            return static_cast<T*>(_cachedComponents[getComponentTypeID<T>()]);
         }
     };
 }

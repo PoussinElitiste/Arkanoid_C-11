@@ -35,7 +35,7 @@ namespace Arkanoid
 
     struct CPhysics : Component
 	{
-		CPosition *cPosition;
+		CPosition* cPosition = {};
 		sf::Vector2f velocity, halfSize;
 
 		std::function<void(const sf::Vector2f &)> onOutOfBounds;
@@ -68,18 +68,16 @@ namespace Arkanoid
 			else if (bottom() > windowHeight) onOutOfBounds(sf::Vector2f{ 0.f, -1.f });
 		}
 
-		float x()		const noexcept 
+		float x() const noexcept 
 		{ 
-			//if (auto tmp = cPosition.lock())
-				return cPosition->x();
-			//return 0.f;
+			return cPosition->x();
 		}
-		float y()		const noexcept 
-		{ 
-			//if (auto tmp = cPosition.lock())
-				return cPosition->y();
-			//return 0.f;
+
+		float y() const noexcept 
+		{
+			return cPosition->y();
 		}
+
 		float left()	const noexcept { return x() - halfSize.x; }
 		float right()	const noexcept { return x() + halfSize.x; }
 		float top()		const noexcept { return y() - halfSize.y; }
@@ -89,8 +87,8 @@ namespace Arkanoid
 	struct CCircle : Component
 	{
 		// TODO: use DIP injection
-		Game_v2 *game{ nullptr };
-		CPosition * cPosition;
+		Game_v2* game = {};
+		CPosition* cPosition = {};
 
 		// define the composition itself
 		sf::CircleShape shape;
@@ -117,8 +115,7 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			//if (auto tmp = cPosition.lock())
-				shape.setPosition(cPosition->_position);
+			shape.setPosition(cPosition->_position);
 		}
 
 		// defined after Game class
@@ -167,7 +164,7 @@ namespace Arkanoid
 
 	struct CPaddleControl : Component
 	{
-		CPhysics *cPhysics;
+		CPhysics* cPhysics = {};
 
         CPaddleControl(Entity &entity) : Component(entity) {}
 
@@ -311,7 +308,6 @@ namespace Arkanoid
 		    entity.addComponent<CPhysics>(entity, halfSize);
 			entity.addComponent<CRectangle>(entity, this).setSize({ paddleWidth *1.5f, paddleHeight * 0.5f });
 			entity.addComponent<CPaddleControl>(entity);
-
             
 			entity.addGroup(ArkanoidGroup::GPaddle);
 
@@ -392,20 +388,13 @@ namespace Arkanoid
 				auto &balls(manager.getEntitiesByGroup(GBall));
 
 				for (const auto& ball : balls)
-                    //if (auto ballPtr = ball.lock())
-                    {
-                        for (const auto &paddle : paddles)
-                            //if (auto paddlePtr = paddle.lock())
-                            {
-                                processCollisionPB(*paddle, *ball);
-                            }
+				{
+                    for (const auto &paddle : paddles)
+                        processCollisionPB(*paddle, *ball);
 
-                        for (const auto &brick : bricks)
-                            //if (auto brickPtr = brick.lock())
-                            {
-                                processCollisionBB(*brick, *ball);
-                            }
-                    }
+                    for (const auto &brick : bricks)
+                        processCollisionBB(*brick, *ball);
+                }
 			}
 		}
 
