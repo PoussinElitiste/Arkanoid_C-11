@@ -25,8 +25,9 @@ endif()
 configure_file("${ARKANOID_ROOT_DIR}/Source/Game/ArkanoidConfig.h.in" "${ARKANOID_ROOT_DIR}/Source/Game/ArkanoidConfig.h")
 
 # external libraries
+# SFML
 set(SFML_STATIC_LIBRARIES TRUE)
-set(SFML_DIR ${ARKANOID_ROOT_DIR}/SFML-2.5.1/x64/lib/cmake/SFML)
+set(SFML_DIR ${ARKANOID_ROOT_DIR}/Library/SFML-2.5.1/x64/lib/cmake/SFML)
 set(CORE_DIR ${ARKANOID_ROOT_DIR}/Source/Core)
 find_package(SFML 2 COMPONENTS graphics audio REQUIRED)
 
