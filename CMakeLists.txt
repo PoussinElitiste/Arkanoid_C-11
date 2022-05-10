@@ -2,11 +2,14 @@
 cmake_minimum_required(VERSION 3.15)
 
 #Project name and version
+set(CMAKE_GENERATOR_PLATFORM Win32) # x64 or Win32
 project(Arkanoid VERSION 0.1 LANGUAGES CXX)
 
 #set variable 
 set(ARKANOID_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
 set(EXECUTABLE_OUTPUT_PATH ${ARKANOID_ROOT_DIR}/Bin)
+
+message(STATUS "ARKANOID_ROOT_DIR: ${ARKANOID_ROOT_DIR}")
 
 #Sub project:
 #- directory must exist with a CMakeLists inside
@@ -27,7 +30,15 @@ configure_file("${ARKANOID_ROOT_DIR}/Source/Game/ArkanoidConfig.h.in" "${ARKANOI
 # external libraries
 # SFML
 set(SFML_STATIC_LIBRARIES TRUE)
-set(SFML_DIR ${ARKANOID_ROOT_DIR}/Library/SFML-2.5.1/x64/lib/cmake/SFML)
+
+if (CMAKE_GENERATOR_PLATFORM MATCHES Win32)
+    set(SFML_DIR ${ARKANOID_ROOT_DIR}/Library/SFML-2.5.1/x32/lib/cmake/SFML)
+endif()
+
+if (CMAKE_GENERATOR_PLATFORM MATCHES x64)
+    set(SFML_DIR ${ARKANOID_ROOT_DIR}/Library/SFML-2.5.1/x64/lib/cmake/SFML)
+endif()
+
 set(CORE_DIR ${ARKANOID_ROOT_DIR}/Source/Core)
 find_package(SFML 2 COMPONENTS graphics audio REQUIRED)
 
