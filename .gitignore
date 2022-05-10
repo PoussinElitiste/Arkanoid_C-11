@@ -261,3 +261,4 @@ __pycache__/
 /SFML-2.5.1/x64/examples
 /Build
 *.exe
+*.index
