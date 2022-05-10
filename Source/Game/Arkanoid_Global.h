@@ -11,4 +11,5 @@ namespace Arkanoid
 	constexpr float ftStep{ 1.f }, ftSlice{ 1.f };
 
 	using Frametime = float;
+    using uint = unsigned int;
 }

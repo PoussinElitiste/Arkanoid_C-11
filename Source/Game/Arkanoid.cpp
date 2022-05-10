@@ -4,7 +4,7 @@
 #include "pch.h"
 
 #include "ArkanoidConfig.h"
-#include "Arkanoid_ECS.h"
+#include "Game.h"
 //#include "Arkanoid_Classic.h"
 #include <vector>
 #include <iostream>
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
               << Arkanoid_VERSION_MINOR << std::endl;
 		std::cout << "Usage: " << argv[0] << " number" << std::endl;
 
-		Game_v2{}.run();
+		Game{}.run();
 		//Game{}.run();
 
 		return 1;

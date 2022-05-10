@@ -3,7 +3,7 @@
 
 namespace ECS
 {
-    //class Manager;
+    class Manager;
 
     /// TODO: used to replace entity/components update/draw in manager
     class System
@@ -16,14 +16,14 @@ namespace ECS
     class UpdateSystem : public System
     {
     public:
-        void initialize(const Manager &manager) override;
-        virtual void update(float mFT) {};
+        void initialize(const Manager& manager) override {};
+        virtual void update(float ft) {};
     };
 
     class DrawSystem : public System
     {
     public:
-        void initialize(const Manager &manager) override;
-        virtual void draw(float mFT) {};
+        void initialize(const Manager& manager) override {};
+        virtual void draw(float ft) {};
     };
 }
