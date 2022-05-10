@@ -2,6 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
+#include "Arkanoid_ECS.h"
 #include "CMath.h"
 #include "Game.h"
 #include "Component.h"
