@@ -3,7 +3,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "Physic.h"
+#include "CMath.h"
 #include "Component.h"
 #include "Entity.h"
 #include "Manager.h"
@@ -178,7 +178,7 @@ namespace Arkanoid
         auto & cpPaddle = mPaddle.getComponent<CPhysics>();
         
 
-            if (!Physic::isIntersecting(cpPaddle, cpBall)) return;
+            if (!CMath::isIntersecting(cpPaddle, cpBall)) return;
             cpBall.velocity.y = -ballVelocity;
             if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
             else cpBall.velocity.x = ballVelocity;
@@ -190,7 +190,7 @@ namespace Arkanoid
 		auto& cpBall = mBall.getComponent<CPhysics>();
 		auto& cpBrick = mBrick.getComponent<CPhysics>();
 
-        if (!Physic::isIntersecting(cpBrick, cpBall)) return;
+        if (!CMath::isIntersecting(cpBrick, cpBall)) return;
 
         mBrick.destroy();
 
