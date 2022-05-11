@@ -118,8 +118,8 @@ namespace Arkanoid
 		// define the composition itself
 		sf::RectangleShape shape;
 
-		CRectangle(Entity& entity, Game* mGame)
-			: Component(entity), _context{ mGame } {}
+		CRectangle(Entity& entity, Game* context)
+			: Component(entity), _context{ context } {}
 
 		void init() override
 		{
