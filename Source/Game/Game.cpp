@@ -103,7 +103,7 @@ namespace Arkanoid
 
     Entity& Game::createBall()
     {
-        auto& entity(manager.addEntity());
+        auto& entity = manager.addEntity();
 
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
         entity.addComponent<CCircle>(entity, this, ballRadius).setColor(sf::Color::White);

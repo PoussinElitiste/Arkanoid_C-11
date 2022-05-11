@@ -20,11 +20,11 @@ namespace Arkanoid
     {}
 
     void CCircle::draw() 
-    { game->render(shape); }
+    { _context->render(shape); }
 
     void CRectangle::draw()
     {
-        game->render(shape);
+        _context->render(shape);
     }
 
     void processCollisionPB(Entity& mPaddle, Entity& mBall)

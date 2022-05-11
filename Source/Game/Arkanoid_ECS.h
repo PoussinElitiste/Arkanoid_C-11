@@ -79,14 +79,14 @@ namespace Arkanoid
 	struct CCircle : Component
 	{
 		// TODO: use DIP injection
-		Game* game = {};
+		Game* _context = {};
 
 		// define the composition itself
 		sf::CircleShape shape;
 		float radius;
 
 		CCircle(Entity& entity, Game *mGame, float mRadius)
-			: Component(entity), game{ mGame }, radius{ mRadius }{}
+			: Component(entity), _context{ mGame }, radius{ mRadius }{}
 
 		void init() override
 		{
@@ -113,13 +113,13 @@ namespace Arkanoid
 	struct CRectangle : Component
 	{
 		// TODO: use DIP injection
-		Game *game{ nullptr };
+		Game* _context = {};
 
 		// define the composition itself
 		sf::RectangleShape shape;
 
-		CRectangle(Entity& entity, Game *mGame)
-			: Component(entity), game{ mGame } {}
+		CRectangle(Entity& entity, Game* mGame)
+			: Component(entity), _context{ mGame } {}
 
 		void init() override
 		{
