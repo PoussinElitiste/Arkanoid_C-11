@@ -34,6 +34,10 @@ namespace Arkanoid
 
         Event::Subject test;
 
+        void processCollisionPB(Entity& mPaddle, Entity& mBall);
+
+        void processCollisionBB(Entity& mBrick, Entity& mBall);
+
     public:
         // factory
         Entity& createBall();

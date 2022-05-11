@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "Arkanoid_ECS.h"
 
+using namespace ECS;
+
 namespace Arkanoid
 {
     Game::Game()
@@ -75,16 +77,16 @@ namespace Arkanoid
             // element must be update at fixed time to get precision
             manager.update(ftStep);
 
-            auto& paddles(manager.getEntitiesByGroup(GPaddle));
-            auto& bricks(manager.getEntitiesByGroup(GBrick));
-            auto& balls(manager.getEntitiesByGroup(GBall));
+            EntityList& paddles = manager.getEntitiesByGroup(GPaddle);
+            EntityList& bricks = manager.getEntitiesByGroup(GBrick);
+            EntityList& balls = manager.getEntitiesByGroup(GBall);
 
-            for (const auto& ball : balls)
+            for (Entity* ball : balls)
             {
-                for (const auto& paddle : paddles)
+                for (Entity* paddle : paddles)
                     processCollisionPB(*paddle, *ball);
 
-                for (const auto& brick : bricks)
+                for (Entity* brick : bricks)
                     processCollisionBB(*brick, *ball);
             }
         }
@@ -96,7 +98,7 @@ namespace Arkanoid
         window.display();
     }
 
-    void  Game::render(const sf::Drawable& mDrawable)
+    void Game::render(const sf::Drawable& mDrawable)
     {
         window.draw(mDrawable);
     }
@@ -160,5 +162,45 @@ namespace Arkanoid
         auto& entity = manager.addSystem<ECS::UpdateSystem>();
 
         return entity;
+    }
+
+    void Game::processCollisionPB(Entity& mPaddle, Entity& mBall)
+    {
+        auto& cpBall = mBall.getComponent<CPhysics>();
+        auto& cpPaddle = mPaddle.getComponent<CPhysics>();
+
+        if (!CMath::isIntersecting(cpPaddle, cpBall)) return;
+        cpBall.velocity.y = -ballVelocity;
+        if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
+        else cpBall.velocity.x = ballVelocity;
+
+    }
+
+    void Game::processCollisionBB(Entity& mBrick, Entity& mBall)
+    {
+        auto& cpBall = mBall.getComponent<CPhysics>();
+        auto& cpBrick = mBrick.getComponent<CPhysics>();
+
+        if (!CMath::isIntersecting(cpBrick, cpBall)) return;
+
+        mBrick.destroy();
+
+        // test collision scenario to deduce reaction
+        float overlapLeft{ cpBall.right() - cpBrick.left() };
+        float overlapRight{ cpBrick.right() - cpBall.left() };
+        float overlapTop{ cpBall.bottom() - cpBrick.top() };
+        float overlapBottom{ cpBrick.bottom() - cpBall.top() };
+
+        bool BallFromLeft = abs(overlapLeft) < abs(overlapRight);
+        bool BallFromTop = abs(overlapTop) < abs(overlapBottom);
+
+        float minOverlapX{ BallFromLeft ? overlapLeft : overlapRight };
+        float minOverlapY{ BallFromTop ? overlapTop : overlapBottom };
+
+        // deduce if ball repel horizontally or vertically
+        if (abs(minOverlapX) < abs(minOverlapY))
+            cpBall.velocity.x = BallFromLeft ? -ballVelocity : ballVelocity;
+        else
+            cpBall.velocity.y = BallFromTop ? -ballVelocity : ballVelocity;
     }
 }

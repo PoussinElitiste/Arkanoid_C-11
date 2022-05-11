@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 		std::cout << "Usage: " << argv[0] << " number" << std::endl;
 
 		Game{}.run();
-		//Game{}.run();
 
 		return 1;
 	}

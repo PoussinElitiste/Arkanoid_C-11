@@ -25,7 +25,7 @@ namespace ECS
         _groupedEntities[group].emplace_back(entity);
     }
 
-    ECS::EntityList & Manager::getEntitiesByGroup(Group group)
+    ECS::EntityList& Manager::getEntitiesByGroup(Group group)
     {
         return _groupedEntities[group];
     }

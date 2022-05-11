@@ -166,8 +166,4 @@ namespace Arkanoid
 			
 		}
 	};
-
-	void processCollisionPB(Entity &mPaddle, Entity &mBall);
-
-	void processCollisionBB(Entity &mBrick, Entity &mBall);
 }
