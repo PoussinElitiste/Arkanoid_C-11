@@ -61,12 +61,10 @@ namespace Arkanoid
 		Game* _context = {};
 
 		// define the composition itself
-		sf::CircleShape shape;
-		float radius;
+		sf::CircleShape _shape;
+		float _radius;
     public:
-		CCircle(Entity& entity, Game *mGame, float mRadius)
-			: Component(entity), _context{ mGame }, radius{ mRadius }{}
-
+		CCircle(Entity& entity, Game* context, float radius);
 		CCircle& Color(sf::Color mColor);
 
         void Init() override;
@@ -78,9 +76,7 @@ namespace Arkanoid
 	{
 		// TODO: use DIP injection
 		Game* _context = {};
-
-		// define the composition itself
-		sf::RectangleShape shape;
+		sf::RectangleShape _shape;
 
     public:
 		CRectangle(Entity& entity, Game* context);
@@ -93,10 +89,10 @@ namespace Arkanoid
 		void Draw() override;
 	};
 
-	class CPaddleControl : public Component
+	class CPaddleControl: public Component
 	{
     public:
-        CPaddleControl(Entity &entity);
+        CPaddleControl(Entity& entity);
 		void Update(Frametime) override;
 	};
 }

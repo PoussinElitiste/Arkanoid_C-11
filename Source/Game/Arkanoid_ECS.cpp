@@ -78,32 +78,35 @@ namespace Arkanoid
 
     void CCircle::Init()
     {
-        shape.setRadius(ballRadius);
-        shape.setFillColor(sf::Color::Red);
-        shape.setOrigin(ballRadius, ballRadius);
+        _shape.setRadius(ballRadius);
+        _shape.setFillColor(sf::Color::Red);
+        _shape.setOrigin(ballRadius, ballRadius);
     }
+
+    CCircle::CCircle(Entity& entity, Game* context, float radius)
+        : Component(entity), _context{ context }, _radius{ radius }{}
 
     CCircle& CCircle::Color(sf::Color mColor)
     {
-        shape.setFillColor(mColor);
+        _shape.setFillColor(mColor);
         return *this;
     }
 
     void CCircle::Update(Frametime)
     {
-        shape.setPosition(_entity.getComponent<CPosition>().Get());
+        _shape.setPosition(_entity.getComponent<CPosition>().Get());
     }
 
     void CCircle::Draw()
     { 
-        _context->render(shape); 
+        _context->render(_shape); 
     }
 
     void CRectangle::Init()
     {
-        shape.setSize({ paddleWidth, paddleHeight });
-        shape.setFillColor(sf::Color::Red);
-        shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
+        _shape.setSize({ paddleWidth, paddleHeight });
+        _shape.setFillColor(sf::Color::Red);
+        _shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
     }
 
     CRectangle::CRectangle(Entity& entity, Game* context)
@@ -111,24 +114,24 @@ namespace Arkanoid
 
     CRectangle& CRectangle::Color(sf::Color mColor)
     {
-        shape.setFillColor(mColor);
+        _shape.setFillColor(mColor);
         return *this;
     }
 
     CRectangle& CRectangle::Size(const CVect2& size)
     {
-        shape.setSize(size);
+        _shape.setSize(size);
         return *this;
     }
 
     void CRectangle::Update(Frametime)
     {
-        shape.setPosition(_entity.getComponent<CPosition>().Get());
+        _shape.setPosition(_entity.getComponent<CPosition>().Get());
     }
 
     void CRectangle::Draw()
     {
-        _context->render(shape);
+        _context->render(_shape);
     }
 
     CPaddleControl::CPaddleControl(Entity& entity)
