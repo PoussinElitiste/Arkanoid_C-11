@@ -99,8 +99,51 @@ namespace Arkanoid
         _context->render(shape); 
     }
 
+    void CRectangle::Init()
+    {
+        shape.setSize({ paddleWidth, paddleHeight });
+        shape.setFillColor(sf::Color::Red);
+        shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
+    }
+
+    CRectangle::CRectangle(Entity& entity, Game* context)
+        : Component(entity), _context{ context } {}
+
+    CRectangle& CRectangle::Color(sf::Color mColor)
+    {
+        shape.setFillColor(mColor);
+        return *this;
+    }
+
+    CRectangle& CRectangle::Size(const CVect2& size)
+    {
+        shape.setSize(size);
+        return *this;
+    }
+
+    void CRectangle::Update(Frametime)
+    {
+        shape.setPosition(_entity.getComponent<CPosition>().Get());
+    }
+
     void CRectangle::Draw()
     {
         _context->render(shape);
     }
+
+    CPaddleControl::CPaddleControl(Entity& entity)
+        : Component(entity) {}
+
+    void CPaddleControl::Update(Frametime)
+    {
+        CPhysics& item = _entity.getComponent<CPhysics>();
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && item.left() > 0)
+            item.Velocity({ -paddleVelocity, item.Velocity().y });
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && item.right() < windowWidth)
+            item.Velocity({ paddleVelocity, item.Velocity().y });
+        else if (item.Velocity().x != 0.f)
+            item.Velocity({ {}, item.Velocity().y });
+    }
+
 }

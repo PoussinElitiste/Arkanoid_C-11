@@ -149,7 +149,7 @@ namespace Arkanoid
 
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
         entity.addComponent<CPhysics>(entity, _halfSize);
-        entity.addComponent<CRectangle>(entity, this).setSize({ paddleWidth * 1.5f, paddleHeight * 0.5f });
+        entity.addComponent<CRectangle>(entity, this).Size({ paddleWidth * 1.5f, paddleHeight * 0.5f });
         entity.addComponent<CPaddleControl>(entity);
 
         entity.addGroup(ArkanoidGroup::GPaddle);

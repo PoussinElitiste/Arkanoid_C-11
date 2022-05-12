@@ -74,7 +74,7 @@ namespace Arkanoid
 		void Draw() override;
 	};
 
-	struct CRectangle : public Component
+	class CRectangle : public Component
 	{
 		// TODO: use DIP injection
 		Game* _context = {};
@@ -82,51 +82,21 @@ namespace Arkanoid
 		// define the composition itself
 		sf::RectangleShape shape;
 
-		CRectangle(Entity& entity, Game* context)
-			: Component(entity), _context{ context } {}
+    public:
+		CRectangle(Entity& entity, Game* context);
 
-		void Init() override
-		{
-			shape.setSize({ paddleWidth, paddleHeight });
-			shape.setFillColor(sf::Color::Red);
-			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
-		}
+		CRectangle& Color(sf::Color mColor);
+		CRectangle& Size(const CVect2& size);
 
-		CRectangle &Color(sf::Color mColor)
-		{
-			shape.setFillColor(mColor);
-			return *this;
-		}
-
-		CRectangle &setSize(const CVect2 size)
-		{
-			shape.setSize(size);
-			return *this;
-		}
-
-		void Update(Frametime) override
-        {
-            shape.setPosition(_entity.getComponent<CPosition>().Get());
-		}
-
-		// defined after Game class
+        void Init() override;
+        void Update(Frametime) override;
 		void Draw() override;
 	};
 
-	struct CPaddleControl : public Component
+	class CPaddleControl : public Component
 	{
-        CPaddleControl(Entity &entity) : Component(entity) {}
-
-		void Update(Frametime) override
-		{
-            CPhysics& item = _entity.getComponent<CPhysics>();
-			
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && item.left() > 0)
-                item.Velocity({-paddleVelocity, item.Velocity().y});
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && item.right() < windowWidth)
-                item.Velocity({paddleVelocity, item.Velocity().y});
-            else if (item.Velocity().x != 0.f)
-                item.Velocity({{}, item.Velocity().y});
-		}
+    public:
+        CPaddleControl(Entity &entity);
+		void Update(Frametime) override;
 	};
 }

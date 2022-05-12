@@ -3,11 +3,14 @@
 namespace ECS
 {   
     class Entity;
-    struct Component
+    class Component
     {
+    protected:
         Entity& _entity;
-
+    
         Component(Entity& entity) : _entity(entity) {}
+
+    public:
         virtual ~Component() = default;
 
         virtual void Init() {}
