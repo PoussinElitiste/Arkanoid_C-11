@@ -11,7 +11,7 @@
 namespace ECS
 {
     class Manager;
-    struct Component;
+    class Component;
     
     class Entity
     {

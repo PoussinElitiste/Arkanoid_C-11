@@ -10,7 +10,7 @@
 namespace ECS
 {
     // EC implementations
-    struct Component;
+    class Component;
     class Entity;
     class System;
     class Manager;

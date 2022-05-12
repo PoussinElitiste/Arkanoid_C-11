@@ -4,16 +4,12 @@
 #include "Arkanoid_Global.h"
 #include "CMath.h"
 #include "Component.h"
-#include "Entity.h"
-#include "Observer.h"
-#include "System.h"
 
 using namespace ECS;
 
 namespace Arkanoid
 {
-	// Game implementation
-	class Game;
+    class Game;
 
 	// EC version
 	//------------
@@ -22,7 +18,7 @@ namespace Arkanoid
 		CVect2 _position;
     public:
 		// we assume root position is the center of the shape
-        CPosition(Entity &entity, const CVect2 &position);
+        CPosition(Entity& entity, const CVect2& position);
 
         void IncPos(const CVect2& dir);
         inline const CVect2& Get() const noexcept { return _position; }
@@ -42,12 +38,9 @@ namespace Arkanoid
         CPhysics& Velocity(const CVect2&& velocity);
         CPhysics& Callback(Vect2Callback cb);
 
-        inline const CVect2& Velocity() const noexcept 
-        { return _velocity; }
-		void Update(Frametime mFT) override;
-
-		inline const CVect2& Position() const noexcept 
-        { return _entity.getComponent<CPosition>().Get(); }
+        inline const CVect2& Velocity() const noexcept { return _velocity; }
+		void Update(Frametime ft) override;
+		inline const CVect2& Position() const noexcept;
 
 		float left()	const noexcept;
 		float right()	const noexcept;

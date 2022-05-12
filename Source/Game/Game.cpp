@@ -1,5 +1,7 @@
 #include "Game.h"
 #include "Arkanoid_ECS.h"
+#include "System.h"
+#include "Entity.h"
 
 using namespace ECS;
 

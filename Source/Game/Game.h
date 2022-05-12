@@ -1,12 +1,14 @@
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "Arkanoid_Global.h"
+
 #include "Manager.h"
-#include "Observer.h"
-#include "Entity.h"
-//#include "Arkanoid_ECS.h"
 
 using namespace ECS;
+namespace ECS {
+    class Entity;
+    class System;
+}
 
 namespace Arkanoid
 {
@@ -32,8 +34,6 @@ namespace Arkanoid
         // handle all entities
         Manager manager;
 
-        Event::Subject test;
-
         void processCollisionPB(Entity& mPaddle, Entity& mBall);
 
         void processCollisionBB(Entity& mBrick, Entity& mBall);
@@ -41,11 +41,8 @@ namespace Arkanoid
     public:
         // factory
         Entity& createBall();
-
         Entity& createBrick(const sf::Vector2f& position);
-
         Entity& createPaddle();
-
         System& createSystem();
 
         Game();

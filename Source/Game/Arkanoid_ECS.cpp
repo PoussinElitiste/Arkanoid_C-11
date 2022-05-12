@@ -1,21 +1,18 @@
 #pragma once
 
+#include "Arkanoid_ECS.h"
+
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "Arkanoid_ECS.h"
 #include "CMath.h"
 #include "Game.h"
-#include "Component.h"
 #include "Entity.h"
-#include "Observer.h"
-#include "System.h"
-#include "Game.h"
 
 using namespace ECS;
 
 namespace Arkanoid
 {
-    CPosition::CPosition(Entity &entity, const CVect2 &position)
+    CPosition::CPosition(Entity& entity, const CVect2& position)
         : Component(entity), _position{ position }
     {}
 
@@ -43,9 +40,9 @@ namespace Arkanoid
         return *this;
     }
 
-    void CPhysics::Update(Frametime mFT)
+    void CPhysics::Update(Frametime ft)
     {
-        _entity.getComponent<CPosition>().IncPos(_velocity * mFT);
+        _entity.getComponent<CPosition>().IncPos(_velocity * ft);
 
         if (_onOutOfBounds == nullptr) return;
 
@@ -54,6 +51,11 @@ namespace Arkanoid
 
         if (top() < 0) _onOutOfBounds(CVect2{ 0.f, 1.f });
         else if (bottom() > windowHeight) _onOutOfBounds(CVect2{ 0.f, -1.f });
+    }
+
+    inline const CVect2& CPhysics::Position() const noexcept
+    {
+        return _entity.getComponent<CPosition>().Get();
     }
 
     float CPhysics::left() const noexcept
@@ -148,5 +150,4 @@ namespace Arkanoid
         else if (item.Velocity().x != 0.f)
             item.Velocity({ {}, item.Velocity().y });
     }
-
 }

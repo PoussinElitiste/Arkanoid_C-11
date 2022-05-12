@@ -8,7 +8,7 @@ namespace ECS
     protected:
         Entity& _entity;
     
-        Component(Entity& entity) : _entity(entity) {}
+        Component(Entity& entity);
 
     public:
         virtual ~Component() = default;
