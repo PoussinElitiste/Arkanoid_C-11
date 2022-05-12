@@ -22,21 +22,21 @@ namespace Arkanoid
             GBall
         };
 
-        sf::RenderWindow window{ { windowWidth, windowHeight }, "Arkanoid - components" };
+        sf::RenderWindow _window;
 
-        Frametime lastFt{ 0.f };
+        Frametime _lastFt = 0.f;
 
         // our frame counter
-        Frametime currentSlice{ 0.f };
+        Frametime _currentSlice = 0.f;
 
-        bool running{ false };
+        bool _running = false;
 
         // handle all entities
-        Manager manager;
+        Manager _manager;
 
-        void processCollisionPB(Entity& mPaddle, Entity& mBall);
+        void processCollisionPB(Entity& paddle, Entity& ball);
 
-        void processCollisionBB(Entity& mBrick, Entity& mBall);
+        void processCollisionBB(Entity& brick, Entity& ball);
 
     public:
         // factory

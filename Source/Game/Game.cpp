@@ -8,9 +8,10 @@ using namespace ECS;
 namespace Arkanoid
 {
     Game::Game()
+        : _window{ { windowWidth, windowHeight }, "Arkanoid - components" }
     {
         // if fps are too slow, velocity process could skip collision
-        window.setFramerateLimit(60);
+        _window.setFramerateLimit(60);
 
         createPaddle();
         createBall();
@@ -23,12 +24,12 @@ namespace Arkanoid
         
     void Game::run()
     {
-        running = true;
+        _running = true;
 
-        while (running)
+        while (_running)
         {
             auto timePoint1(std::chrono::high_resolution_clock::now());
-            window.clear(sf::Color::Black);
+            _window.clear(sf::Color::Black);
 
             inputPhase();
             updatePhase();
@@ -40,12 +41,12 @@ namespace Arkanoid
 
             Frametime ft{ std::chrono::duration_cast<std::chrono::duration<float, std::milli>>(elapseTime).count() };
 
-            lastFt = ft;
+            _lastFt = ft;
 
             auto ftSeconds(ft / 1000.f);
             auto fps(1.f / ftSeconds);
 
-            window.setTitle("FT: " + std::to_string(ft) + "\tFPS" + std::to_string(fps));
+            _window.setTitle("FT: " + std::to_string(ft) + "\tFPS" + std::to_string(fps));
         }
     }
 
@@ -53,35 +54,35 @@ namespace Arkanoid
     {
         // SFML tips: prevent window freezing
         sf::Event event;
-        while (window.pollEvent(event))
+        while (_window.pollEvent(event))
         {
             if (event.type == sf::Event::Closed)
             {
-                window.close();
+                _window.close();
                 break;
             }
         }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) running = false;
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape)) _running = false;
     }
 
     void Game::updatePhase()
     {
-        currentSlice += lastFt;
+        _currentSlice += _lastFt;
 
         // handle fixed FPS independent from CPU clock
         // note : 
         // if process took too much time --> execute several time the frame
         // if process took too less time --> skip the frame
-        for (; currentSlice >= ftSlice; currentSlice -= ftSlice)
+        for (; _currentSlice >= ftSlice; _currentSlice -= ftSlice)
         {
-            manager.refresh();
+            _manager.refresh();
             // element must be update at fixed time to get precision
-            manager.Update(ftStep);
+            _manager.Update(ftStep);
 
-            EntityList& paddles = manager.getEntitiesByGroup(GPaddle);
-            EntityList& bricks = manager.getEntitiesByGroup(GBrick);
-            EntityList& balls = manager.getEntitiesByGroup(GBall);
+            EntityList& paddles = _manager.getEntitiesByGroup(GPaddle);
+            EntityList& bricks = _manager.getEntitiesByGroup(GBrick);
+            EntityList& balls = _manager.getEntitiesByGroup(GBall);
 
             for (Entity* ball : balls)
             {
@@ -96,18 +97,18 @@ namespace Arkanoid
 
     void Game::drawPhase()
     {
-        manager.Draw();
-        window.display();
+        _manager.Draw();
+        _window.display();
     }
 
     void Game::render(const sf::Drawable& mDrawable)
     {
-        window.draw(mDrawable);
+        _window.draw(mDrawable);
     }
 
     Entity& Game::createBall()
     {
-        auto& entity = manager.addEntity();
+        auto& entity = _manager.addEntity();
 
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
         entity.addComponent<CCircle>(entity, this, ballRadius).Color(sf::Color::White);
@@ -133,7 +134,7 @@ namespace Arkanoid
     Entity& Game::createBrick(const sf::Vector2f& position)
     {
         sf::Vector2f _halfSize{ blockWidth / 2.f, blockHeight / 2.f };
-        auto& entity = manager.addEntity();
+        auto& entity = _manager.addEntity();
 
         entity.addComponent<CPosition>(entity, position);
         entity.addComponent<CPhysics>(entity, _halfSize);
@@ -147,7 +148,7 @@ namespace Arkanoid
     Entity& Game::createPaddle()
     {
         sf::Vector2f _halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
-        auto& entity(manager.addEntity());
+        auto& entity(_manager.addEntity());
 
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
         entity.addComponent<CPhysics>(entity, _halfSize);
@@ -162,15 +163,15 @@ namespace Arkanoid
     System& Game::createSystem()
     {
         sf::Vector2f _halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
-        auto& entity = manager.addSystem<ECS::UpdateSystem>();
+        auto& entity = _manager.addSystem<ECS::UpdateSystem>();
 
         return entity;
     }
 
-    void Game::processCollisionPB(Entity& mPaddle, Entity& mBall)
+    void Game::processCollisionPB(Entity& paddle, Entity& ball)
     {
-        CPhysics& cpBall = mBall.getComponent<CPhysics>();
-        CPhysics& cpPaddle = mPaddle.getComponent<CPhysics>();
+        CPhysics& cpBall = ball.getComponent<CPhysics>();
+        CPhysics& cpPaddle = paddle.getComponent<CPhysics>();
 
         const CVect2& vBall = cpBall.Velocity();
         const CVect2& vPaddle = cpPaddle.Velocity();
@@ -188,14 +189,14 @@ namespace Arkanoid
 
     }
 
-    void Game::processCollisionBB(Entity& mBrick, Entity& mBall)
+    void Game::processCollisionBB(Entity& brick, Entity& ball)
     {
-        auto& cpBall = mBall.getComponent<CPhysics>();
-        auto& cpBrick = mBrick.getComponent<CPhysics>();
+        auto& cpBall = ball.getComponent<CPhysics>();
+        auto& cpBrick = brick.getComponent<CPhysics>();
 
         if (!CMath::isIntersecting(cpBrick, cpBall)) return;
 
-        mBrick.destroy();
+        brick.destroy();
 
         // test collision scenario to deduce reaction
         float overlapLeft{ cpBall.right() - cpBrick.left() };

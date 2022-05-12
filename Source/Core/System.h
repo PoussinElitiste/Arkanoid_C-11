@@ -9,21 +9,21 @@ namespace ECS
     class System
     {
     public:
-        virtual void initialize(const Manager &manager) = 0;
+        virtual void initialize(const Manager &_manager) = 0;
         virtual void Draw() {};
     };
 
     class UpdateSystem : public System
     {
     public:
-        void initialize(const Manager& manager) override {};
+        void initialize(const Manager& _manager) override {};
         virtual void Update(float ft) {};
     };
 
     class DrawSystem : public System
     {
     public:
-        void initialize(const Manager& manager) override {};
+        void initialize(const Manager& _manager) override {};
         virtual void Draw(float ft) {};
     };
 }
