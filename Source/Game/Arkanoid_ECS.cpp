@@ -47,10 +47,10 @@ namespace Arkanoid
         if (_onOutOfBounds == nullptr) return;
 
         if (left() < 0)	_onOutOfBounds(CVect2{ 1.f, 0.f });
-        else if (right() > windowWidth)	_onOutOfBounds(CVect2{ -1.f, 0.f });
+        else if (right() > SCREEN_WIDTH)	_onOutOfBounds(CVect2{ -1.f, 0.f });
 
         if (top() < 0) _onOutOfBounds(CVect2{ 0.f, 1.f });
-        else if (bottom() > windowHeight) _onOutOfBounds(CVect2{ 0.f, -1.f });
+        else if (bottom() > SCREEN_HEIGHT) _onOutOfBounds(CVect2{ 0.f, -1.f });
     }
 
     inline const CVect2& CPhysics::Position() const noexcept
@@ -80,9 +80,9 @@ namespace Arkanoid
 
     void CCircle::Init()
     {
-        _shape.setRadius(ballRadius);
+        _shape.setRadius(BALL_RADIUS);
         _shape.setFillColor(sf::Color::Red);
-        _shape.setOrigin(ballRadius, ballRadius);
+        _shape.setOrigin(BALL_RADIUS, BALL_RADIUS);
     }
 
     CCircle::CCircle(Entity& entity, Game* context, float radius)
@@ -106,9 +106,9 @@ namespace Arkanoid
 
     void CRectangle::Init()
     {
-        _shape.setSize({ paddleWidth, paddleHeight });
+        _shape.setSize({ PADDLE_WIDTH, PADDLE_HEIGHT });
         _shape.setFillColor(sf::Color::Red);
-        _shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
+        _shape.setOrigin(PADDLE_WIDTH / 2.f, PADDLE_HEIGHT / 2.f);
     }
 
     CRectangle::CRectangle(Entity& entity, Game* context)
@@ -144,9 +144,9 @@ namespace Arkanoid
         CPhysics& item = _entity.getComponent<CPhysics>();
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && item.left() > 0)
-            item.Velocity({ -paddleVelocity, item.Velocity().y });
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && item.right() < windowWidth)
-            item.Velocity({ paddleVelocity, item.Velocity().y });
+            item.Velocity({ -PADDLE_VELOCITY, item.Velocity().y });
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && item.right() < SCREEN_WIDTH)
+            item.Velocity({ PADDLE_VELOCITY, item.Velocity().y });
         else if (item.Velocity().x != 0.f)
             item.Velocity({ {}, item.Velocity().y });
     }

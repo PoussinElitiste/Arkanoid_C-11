@@ -8,7 +8,7 @@ using namespace ECS;
 namespace Arkanoid
 {
     Game::Game()
-        : _window{ { windowWidth, windowHeight }, "Arkanoid - components" }
+        : _window{ { SCREEN_WIDTH, SCREEN_HEIGHT }, "Arkanoid - components" }
     {
         // if fps are too slow, velocity process could skip collision
         _window.setFramerateLimit(60);
@@ -17,7 +17,7 @@ namespace Arkanoid
         createBall();
         for (int iX{ 0 }; iX < countBlocksX; ++iX)
             for (int iY{ 0 }; iY < countBlocksY; ++iY)
-                createBrick(sf::Vector2f{ (iX + 1) * (blockWidth + 3) + 22, (iY + 1) * (blockHeight + 3) });
+                createBrick(sf::Vector2f{ (iX + 1) * (BLOCK_WIDTH + 3) + 22, (iY + 1) * (BLOCK_HEIGHT + 3) });
 
         // TODO: create System
     }
@@ -74,11 +74,11 @@ namespace Arkanoid
         // note : 
         // if process took too much time --> execute several time the frame
         // if process took too less time --> skip the frame
-        for (; _currentSlice >= ftSlice; _currentSlice -= ftSlice)
+        for (; _currentSlice >= FT_SLICE; _currentSlice -= FT_SLICE)
         {
             _manager.refresh();
             // element must be update at fixed time to get precision
-            _manager.Update(ftStep);
+            _manager.Update(FT_STEP);
 
             EntityList& paddles = _manager.getEntitiesByGroup(GPaddle);
             EntityList& bricks = _manager.getEntitiesByGroup(GBrick);
@@ -110,10 +110,10 @@ namespace Arkanoid
     {
         auto& entity = _manager.addEntity();
 
-        entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
-        entity.addComponent<CCircle>(entity, this, ballRadius).Color(sf::Color::White);
-        entity.addComponent<CPhysics>(entity, sf::Vector2f{ ballRadius, ballRadius })
-            .Velocity(sf::Vector2f{ -ballVelocity, -ballVelocity })
+        entity.addComponent<CPosition>(entity, sf::Vector2f{ SCREEN_WIDTH / 2.f, SCREEN_HEIGHT / 2.f });
+        entity.addComponent<CCircle>(entity, this, BALL_RADIUS).Color(sf::Color::White);
+        entity.addComponent<CPhysics>(entity, sf::Vector2f{ BALL_RADIUS, BALL_RADIUS })
+            .Velocity(sf::Vector2f{ -BALL_VELOCITY, -BALL_VELOCITY })
             // we delegate collision process to Game 
             .Callback([&entity](const sf::Vector2f& side)
         {
@@ -133,7 +133,7 @@ namespace Arkanoid
 
     Entity& Game::createBrick(const sf::Vector2f& position)
     {
-        sf::Vector2f _halfSize{ blockWidth / 2.f, blockHeight / 2.f };
+        sf::Vector2f _halfSize{ BLOCK_WIDTH / 2.f, BLOCK_HEIGHT / 2.f };
         auto& entity = _manager.addEntity();
 
         entity.addComponent<CPosition>(entity, position);
@@ -147,12 +147,12 @@ namespace Arkanoid
 
     Entity& Game::createPaddle()
     {
-        sf::Vector2f _halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
+        sf::Vector2f _halfSize{ PADDLE_WIDTH / 2.f, PADDLE_HEIGHT / 2.f };
         auto& entity(_manager.addEntity());
 
-        entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
+        entity.addComponent<CPosition>(entity, sf::Vector2f{ SCREEN_WIDTH / 2.f, SCREEN_HEIGHT - 60.f });
         entity.addComponent<CPhysics>(entity, _halfSize);
-        entity.addComponent<CRectangle>(entity, this).Size({ paddleWidth * 1.5f, paddleHeight * 0.5f });
+        entity.addComponent<CRectangle>(entity, this).Size({ PADDLE_WIDTH * 1.5f, PADDLE_HEIGHT * 0.5f });
         entity.addComponent<CPaddleControl>(entity);
 
         entity.addGroup(ArkanoidGroup::GPaddle);
@@ -162,7 +162,7 @@ namespace Arkanoid
 
     System& Game::createSystem()
     {
-        sf::Vector2f _halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
+        sf::Vector2f _halfSize{ PADDLE_WIDTH / 2.f, PADDLE_HEIGHT / 2.f };
         auto& entity = _manager.addSystem<ECS::UpdateSystem>();
 
         return entity;
@@ -183,9 +183,9 @@ namespace Arkanoid
             return;
 
         if (pBall.x < pPaddle.x)
-            cpBall.Velocity({ -ballVelocity, -ballVelocity });
+            cpBall.Velocity({ -BALL_VELOCITY, -BALL_VELOCITY });
         else 
-            cpBall.Velocity({ ballVelocity, -ballVelocity });
+            cpBall.Velocity({ BALL_VELOCITY, -BALL_VELOCITY });
 
     }
 
@@ -212,8 +212,8 @@ namespace Arkanoid
 
         // deduce if ball repel horizontally or vertically
         if (abs(minOverlapX) < abs(minOverlapY))
-            cpBall.Velocity({BallFromLeft ? -ballVelocity : ballVelocity, cpBall.Velocity().y});
+            cpBall.Velocity({BallFromLeft ? -BALL_VELOCITY : BALL_VELOCITY, cpBall.Velocity().y});
         else
-            cpBall.Velocity({ cpBall.Velocity().x, BallFromTop ? -ballVelocity : ballVelocity});
+            cpBall.Velocity({ cpBall.Velocity().x, BallFromTop ? -BALL_VELOCITY : BALL_VELOCITY});
     }
 }
