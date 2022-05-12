@@ -199,16 +199,16 @@ namespace Arkanoid
         brick.destroy();
 
         // test collision scenario to deduce reaction
-        float overlapLeft{ cpBall.right() - cpBrick.left() };
-        float overlapRight{ cpBrick.right() - cpBall.left() };
-        float overlapTop{ cpBall.bottom() - cpBrick.top() };
-        float overlapBottom{ cpBrick.bottom() - cpBall.top() };
+        float overlapLeft = cpBall.right() - cpBrick.left();
+        float overlapRight = cpBrick.right() - cpBall.left();
+        float overlapTop = cpBall.bottom() - cpBrick.top();
+        float overlapBottom = cpBrick.bottom() - cpBall.top();
 
         bool BallFromLeft = abs(overlapLeft) < abs(overlapRight);
         bool BallFromTop = abs(overlapTop) < abs(overlapBottom);
 
-        float minOverlapX{ BallFromLeft ? overlapLeft : overlapRight };
-        float minOverlapY{ BallFromTop ? overlapTop : overlapBottom };
+        float minOverlapX = BallFromLeft ? overlapLeft : overlapRight;
+        float minOverlapY = BallFromTop ? overlapTop : overlapBottom;
 
         // deduce if ball repel horizontally or vertically
         if (abs(minOverlapX) < abs(minOverlapY))
