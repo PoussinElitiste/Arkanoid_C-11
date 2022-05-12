@@ -28,8 +28,8 @@ namespace ECS
 
     public:
         ~Manager();
-        void update(float mFT);
-        void draw();
+        void Update(float mFT);
+        void Draw();
 
         void addToGroup(Entity *entity, Group group);
         EntityList &getEntitiesByGroup(Group group);

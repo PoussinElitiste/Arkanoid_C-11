@@ -68,7 +68,7 @@ namespace Event
             _buffer.registerEvent(Message { cb });
         }
 
-        static void update()
+        static void Update()
         {
             if (_buffer.isEmpty()) return;
             _buffer.front().cb();
@@ -90,7 +90,7 @@ namespace Event
         }
 
         /// TODO: to be update by eventSystem
-        static void update()
+        static void Update()
         {
             _buffer.forEach([&] (const Message & msg) {
                 msg.cb();

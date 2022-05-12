@@ -75,7 +75,7 @@ namespace Arkanoid
         {
             manager.refresh();
             // element must be update at fixed time to get precision
-            manager.update(ftStep);
+            manager.Update(ftStep);
 
             EntityList& paddles = manager.getEntitiesByGroup(GPaddle);
             EntityList& bricks = manager.getEntitiesByGroup(GBrick);
@@ -94,7 +94,7 @@ namespace Arkanoid
 
     void Game::drawPhase()
     {
-        manager.draw();
+        manager.Draw();
         window.display();
     }
 
@@ -108,7 +108,7 @@ namespace Arkanoid
         auto& entity = manager.addEntity();
 
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
-        entity.addComponent<CCircle>(entity, this, ballRadius).setColor(sf::Color::White);
+        entity.addComponent<CCircle>(entity, this, ballRadius).Color(sf::Color::White);
         entity.addComponent<CPhysics>(entity, sf::Vector2f{ ballRadius, ballRadius })
             .Velocity(sf::Vector2f{ -ballVelocity, -ballVelocity })
             // we delegate collision process to Game 
@@ -135,7 +135,7 @@ namespace Arkanoid
 
         entity.addComponent<CPosition>(entity, position);
         entity.addComponent<CPhysics>(entity, _halfSize);
-        entity.addComponent<CRectangle>(entity, this).setColor(sf::Color::Yellow);
+        entity.addComponent<CRectangle>(entity, this).Color(sf::Color::Yellow);
 
         entity.addGroup(ArkanoidGroup::GBrick);
 

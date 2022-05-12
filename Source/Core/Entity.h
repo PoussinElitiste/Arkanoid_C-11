@@ -32,8 +32,8 @@ namespace ECS
     
     public:
         Entity(Manager& mManager) : _manager(mManager) {}
-        void update(float mFT);
-        void draw();
+        void Update(float mFT);
+        void Draw();
     
         bool isAlive() const { return alive; }
         void destroy() { alive = false; }
@@ -64,7 +64,7 @@ namespace ECS
             // register cache component for fast access
             _cachedComponents[getComponentTypeID<T>()] = componentPtr.get();
             _componentBitset[getComponentTypeID<T>()] = true;
-            componentPtr->init();
+            componentPtr->Init();
 
             // move is mandatory because unique_ptr cannot be copied
             _components.emplace_back(std::move(componentPtr));

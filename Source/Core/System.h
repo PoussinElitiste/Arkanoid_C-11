@@ -10,20 +10,20 @@ namespace ECS
     {
     public:
         virtual void initialize(const Manager &manager) = 0;
-        virtual void draw() {};
+        virtual void Draw() {};
     };
 
     class UpdateSystem : public System
     {
     public:
         void initialize(const Manager& manager) override {};
-        virtual void update(float ft) {};
+        virtual void Update(float ft) {};
     };
 
     class DrawSystem : public System
     {
     public:
         void initialize(const Manager& manager) override {};
-        virtual void draw(float ft) {};
+        virtual void Draw(float ft) {};
     };
 }

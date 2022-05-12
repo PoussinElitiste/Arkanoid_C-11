@@ -37,14 +37,14 @@ namespace Arkanoid
     public:
 		CPhysics(Entity& entity, const CVect2 &mHalfSize);
 
-		void init() override;
+		void Init() override;
 
         CPhysics& Velocity(const CVect2&& velocity);
         CPhysics& Callback(Vect2Callback cb);
 
         inline const CVect2& Velocity() const noexcept 
         { return _velocity; }
-		void update(Frametime mFT) override;
+		void Update(Frametime mFT) override;
 
 		inline const CVect2& Position() const noexcept 
         { return _entity.getComponent<CPosition>().Get(); }
@@ -55,7 +55,7 @@ namespace Arkanoid
 		float bottom()	const noexcept;
 	};
 
-	struct CCircle : public Component
+	class CCircle : public Component
 	{
 		// TODO: use DIP injection
 		Game* _context = {};
@@ -63,30 +63,15 @@ namespace Arkanoid
 		// define the composition itself
 		sf::CircleShape shape;
 		float radius;
-
+    public:
 		CCircle(Entity& entity, Game *mGame, float mRadius)
 			: Component(entity), _context{ mGame }, radius{ mRadius }{}
 
-		void init() override
-		{
-			shape.setRadius(ballRadius);
-			shape.setFillColor(sf::Color::Red);
-			shape.setOrigin(ballRadius, ballRadius);
-		}
+		CCircle& Color(sf::Color mColor);
 
-		CCircle &setColor(sf::Color mColor)
-		{
-			shape.setFillColor(mColor);
-			return *this;
-		}
-
-		void update(Frametime) override
-		{
-			shape.setPosition(_entity.getComponent<CPosition>().Get());
-		}
-
-		// defined after Game class
-		void draw() override;
+        void Init() override;
+		void Update(Frametime) override;
+		void Draw() override;
 	};
 
 	struct CRectangle : public Component
@@ -100,14 +85,14 @@ namespace Arkanoid
 		CRectangle(Entity& entity, Game* context)
 			: Component(entity), _context{ context } {}
 
-		void init() override
+		void Init() override
 		{
 			shape.setSize({ paddleWidth, paddleHeight });
 			shape.setFillColor(sf::Color::Red);
 			shape.setOrigin(paddleWidth / 2.f, paddleHeight / 2.f);
 		}
 
-		CRectangle &setColor(sf::Color mColor)
+		CRectangle &Color(sf::Color mColor)
 		{
 			shape.setFillColor(mColor);
 			return *this;
@@ -119,20 +104,20 @@ namespace Arkanoid
 			return *this;
 		}
 
-		void update(Frametime) override
+		void Update(Frametime) override
         {
             shape.setPosition(_entity.getComponent<CPosition>().Get());
 		}
 
 		// defined after Game class
-		void draw() override;
+		void Draw() override;
 	};
 
 	struct CPaddleControl : public Component
 	{
         CPaddleControl(Entity &entity) : Component(entity) {}
 
-		void update(Frametime) override
+		void Update(Frametime) override
 		{
             CPhysics& item = _entity.getComponent<CPhysics>();
 			

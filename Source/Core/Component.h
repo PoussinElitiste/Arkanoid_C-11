@@ -10,9 +10,9 @@ namespace ECS
         Component(Entity& entity) : _entity(entity) {}
         virtual ~Component() = default;
 
-        virtual void init() {}
+        virtual void Init() {}
         /// TODO: migrate logic to dedicated systems
-        virtual void update(float) {}
-        virtual void draw() {}
+        virtual void Update(float) {}
+        virtual void Draw() {}
     };
 }

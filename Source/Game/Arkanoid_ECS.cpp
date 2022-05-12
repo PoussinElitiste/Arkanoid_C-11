@@ -27,7 +27,7 @@ namespace Arkanoid
     CPhysics::CPhysics(Entity& entity, const CVect2& mHalfSize)
         : Component(entity), _halfSize{ mHalfSize } {}
 
-    void CPhysics::init()
+    void CPhysics::Init()
     {
     }
 
@@ -43,7 +43,7 @@ namespace Arkanoid
         return *this;
     }
 
-    void CPhysics::update(Frametime mFT)
+    void CPhysics::Update(Frametime mFT)
     {
         _entity.getComponent<CPosition>().IncPos(_velocity * mFT);
 
@@ -76,12 +76,30 @@ namespace Arkanoid
         return Position().y + _halfSize.y;
     }
 
-    void CCircle::draw() 
+    void CCircle::Init()
+    {
+        shape.setRadius(ballRadius);
+        shape.setFillColor(sf::Color::Red);
+        shape.setOrigin(ballRadius, ballRadius);
+    }
+
+    CCircle& CCircle::Color(sf::Color mColor)
+    {
+        shape.setFillColor(mColor);
+        return *this;
+    }
+
+    void CCircle::Update(Frametime)
+    {
+        shape.setPosition(_entity.getComponent<CPosition>().Get());
+    }
+
+    void CCircle::Draw()
     { 
         _context->render(shape); 
     }
 
-    void CRectangle::draw()
+    void CRectangle::Draw()
     {
         _context->render(shape);
     }

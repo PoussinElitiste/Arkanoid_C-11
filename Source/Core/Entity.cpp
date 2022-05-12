@@ -14,16 +14,16 @@ namespace ECS
         _manager.addToGroup(this, mGroup);
     }
 
-    void Entity::update(float mFT)
+    void Entity::Update(float mFT)
     {
         for (auto &c : _components)
-            c->update(mFT);
+            c->Update(mFT);
     }
 
-    void Entity::draw()
+    void Entity::Draw()
     {
         for (auto &c : _components)
-            c->draw();
+            c->Draw();
     }
 
     void Entity::delGroup(Group mGroup) noexcept

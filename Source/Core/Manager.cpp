@@ -9,15 +9,15 @@ namespace ECS
     Manager::~Manager()
     = default;
 
-    void Manager::update(float mFT)
+    void Manager::Update(float mFT)
     {
         for (auto &e : _entities) 
-            e->update(mFT);
+            e->Update(mFT);
     }
 
-    void Manager::draw()
+    void Manager::Draw()
     {
-        for (auto &e : _entities) e->draw();
+        for (auto &e : _entities) e->Draw();
     }
 
     void Manager::addToGroup(Entity * entity, Group group)
