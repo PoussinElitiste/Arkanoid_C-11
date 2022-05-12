@@ -17,66 +17,45 @@ namespace Arkanoid
 
 	// EC version
 	//------------
-	struct CPosition : Component
+	class CPosition : public Component
 	{
-		sf::Vector2f _position;
-
+		CVect2 _position;
+    public:
 		// we assume root position is the center of the shape
-        CPosition(Entity &entity, const sf::Vector2f &position);
+        CPosition(Entity &entity, const CVect2 &position);
 
-		float x() const noexcept { return _position.x; }
-		float y() const noexcept { return _position.y; }
+        void IncPos(const CVect2& dir);
+        inline const CVect2& Get() const noexcept { return _position; }
 	};
 
-    struct CPhysics : Component
+    class CPhysics : public Component
 	{
-		sf::Vector2f velocity, halfSize;
+		CVect2 _velocity, _halfSize;
 
-		std::function<void(const sf::Vector2f &)> onOutOfBounds;
+        Vect2Callback _onOutOfBounds;
 
-		CPhysics(Entity& entity, const sf::Vector2f &mHalfSize) : Component(entity), halfSize{ mHalfSize } {}
+    public:
+		CPhysics(Entity& entity, const CVect2 &mHalfSize);
 
-		void init() override
-		{
-		}
+		void init() override;
 
-		CPhysics &setVelocity(const sf::Vector2f &mVelocity)
-		{
-			velocity = mVelocity;
+        CPhysics& Velocity(const CVect2&& velocity);
+        CPhysics& Callback(Vect2Callback cb);
 
-			return *this;
-		}
+        inline const CVect2& Velocity() const noexcept 
+        { return _velocity; }
+		void update(Frametime mFT) override;
 
-		void update(Frametime mFT) override
-		{
-			_entity.getComponent<CPosition>()._position += velocity * mFT;
+		inline const CVect2& Position() const noexcept 
+        { return _entity.getComponent<CPosition>().Get(); }
 
-			if (onOutOfBounds == nullptr) return;
-
-			if (left() < 0)	onOutOfBounds(sf::Vector2f{ 1.f, 0.f });
-			else if (right() > windowWidth)	onOutOfBounds(sf::Vector2f{ -1.f, 0.f });
-
-			if (top() < 0) onOutOfBounds(sf::Vector2f{ 0.f, 1.f });
-			else if (bottom() > windowHeight) onOutOfBounds(sf::Vector2f{ 0.f, -1.f });
-		}
-
-		float x() const noexcept 
-		{ 
-			return _entity.getComponent<CPosition>().x();
-		}
-
-		float y() const noexcept 
-		{
-			return _entity.getComponent<CPosition>().y();
-		}
-
-		float left()	const noexcept { return x() - halfSize.x; }
-		float right()	const noexcept { return x() + halfSize.x; }
-		float top()		const noexcept { return y() - halfSize.y; }
-		float bottom()	const noexcept { return y() + halfSize.y; }
+		float left()	const noexcept;
+		float right()	const noexcept;
+		float top()		const noexcept;
+		float bottom()	const noexcept;
 	};
 
-	struct CCircle : Component
+	struct CCircle : public Component
 	{
 		// TODO: use DIP injection
 		Game* _context = {};
@@ -103,14 +82,14 @@ namespace Arkanoid
 
 		void update(Frametime) override
 		{
-			shape.setPosition(_entity.getComponent<CPosition>()._position);
+			shape.setPosition(_entity.getComponent<CPosition>().Get());
 		}
 
 		// defined after Game class
 		void draw() override;
 	};
 
-	struct CRectangle : Component
+	struct CRectangle : public Component
 	{
 		// TODO: use DIP injection
 		Game* _context = {};
@@ -134,7 +113,7 @@ namespace Arkanoid
 			return *this;
 		}
 
-		CRectangle &setSize(const sf::Vector2f size)
+		CRectangle &setSize(const CVect2 size)
 		{
 			shape.setSize(size);
 			return *this;
@@ -142,28 +121,27 @@ namespace Arkanoid
 
 		void update(Frametime) override
         {
-            shape.setPosition(_entity.getComponent<CPosition>()._position);
+            shape.setPosition(_entity.getComponent<CPosition>().Get());
 		}
 
 		// defined after Game class
 		void draw() override;
 	};
 
-	struct CPaddleControl : Component
+	struct CPaddleControl : public Component
 	{
         CPaddleControl(Entity &entity) : Component(entity) {}
 
 		void update(Frametime) override
 		{
-			auto& tmp = _entity.getComponent<CPhysics>();
+            CPhysics& item = _entity.getComponent<CPhysics>();
 			
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && tmp.left() > 0)
-                tmp.velocity.x = -paddleVelocity;
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && tmp.right() < windowWidth)
-                tmp.velocity.x = paddleVelocity;
-            else if (tmp.velocity.x != 0.f)
-                tmp.velocity.x = {};
-			
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left) && item.left() > 0)
+                item.Velocity({-paddleVelocity, item.Velocity().y});
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right) && item.right() < windowWidth)
+                item.Velocity({paddleVelocity, item.Velocity().y});
+            else if (item.Velocity().x != 0.f)
+                item.Velocity({{}, item.Velocity().y});
 		}
 	};
 }

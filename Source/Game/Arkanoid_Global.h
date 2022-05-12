@@ -1,4 +1,7 @@
 #pragma once
+#include <vector>
+#include <functional>
+
 namespace Arkanoid
 {
 	constexpr unsigned int windowWidth{ 800 }, windowHeight{ 600 };
@@ -12,4 +15,6 @@ namespace Arkanoid
 
 	using Frametime = float;
     using uint = unsigned int;
+    using CVect2 = sf::Vector2f;
+    using Vect2Callback = std::function<void(const CVect2&)>;
 }

@@ -110,17 +110,18 @@ namespace Arkanoid
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight / 2.f });
         entity.addComponent<CCircle>(entity, this, ballRadius).setColor(sf::Color::White);
         entity.addComponent<CPhysics>(entity, sf::Vector2f{ ballRadius, ballRadius })
-            .setVelocity(sf::Vector2f{ -ballVelocity, -ballVelocity })
+            .Velocity(sf::Vector2f{ -ballVelocity, -ballVelocity })
             // we delegate collision process to Game 
-            .onOutOfBounds = [&entity](const sf::Vector2f& mSide)
+            .Callback([&entity](const sf::Vector2f& side)
         {
-            auto& cPhysics{ entity.getComponent<CPhysics>() };
-            if (mSide.x != 0.f)
-                cPhysics.velocity.x = abs(cPhysics.velocity.x) * mSide.x;
+            CPhysics& cp{ entity.getComponent<CPhysics>() };
+            const CVect2& v = cp.Velocity();
+            if (side.x != 0.f)
+                cp.Velocity({abs(v.x) * side.x, v.y});
 
-            if (mSide.y != 0.f)
-                cPhysics.velocity.y = abs(cPhysics.velocity.y) * mSide.y;
-        };
+            if (side.y != 0.f)
+                cp.Velocity({ v.x, abs(v.y) * side.y});
+        });
 
         entity.addGroup(ArkanoidGroup::GBall);
 
@@ -129,11 +130,11 @@ namespace Arkanoid
 
     Entity& Game::createBrick(const sf::Vector2f& position)
     {
-        sf::Vector2f halfSize{ blockWidth / 2.f, blockHeight / 2.f };
+        sf::Vector2f _halfSize{ blockWidth / 2.f, blockHeight / 2.f };
         auto& entity = manager.addEntity();
 
         entity.addComponent<CPosition>(entity, position);
-        entity.addComponent<CPhysics>(entity, halfSize);
+        entity.addComponent<CPhysics>(entity, _halfSize);
         entity.addComponent<CRectangle>(entity, this).setColor(sf::Color::Yellow);
 
         entity.addGroup(ArkanoidGroup::GBrick);
@@ -143,11 +144,11 @@ namespace Arkanoid
 
     Entity& Game::createPaddle()
     {
-        sf::Vector2f halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
+        sf::Vector2f _halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
         auto& entity(manager.addEntity());
 
         entity.addComponent<CPosition>(entity, sf::Vector2f{ windowWidth / 2.f, windowHeight - 60.f });
-        entity.addComponent<CPhysics>(entity, halfSize);
+        entity.addComponent<CPhysics>(entity, _halfSize);
         entity.addComponent<CRectangle>(entity, this).setSize({ paddleWidth * 1.5f, paddleHeight * 0.5f });
         entity.addComponent<CPaddleControl>(entity);
 
@@ -158,7 +159,7 @@ namespace Arkanoid
 
     System& Game::createSystem()
     {
-        sf::Vector2f halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
+        sf::Vector2f _halfSize{ paddleWidth / 2.f, paddleHeight / 2.f };
         auto& entity = manager.addSystem<ECS::UpdateSystem>();
 
         return entity;
@@ -166,13 +167,22 @@ namespace Arkanoid
 
     void Game::processCollisionPB(Entity& mPaddle, Entity& mBall)
     {
-        auto& cpBall = mBall.getComponent<CPhysics>();
-        auto& cpPaddle = mPaddle.getComponent<CPhysics>();
+        CPhysics& cpBall = mBall.getComponent<CPhysics>();
+        CPhysics& cpPaddle = mPaddle.getComponent<CPhysics>();
 
-        if (!CMath::isIntersecting(cpPaddle, cpBall)) return;
-        cpBall.velocity.y = -ballVelocity;
-        if (cpBall.x() < cpPaddle.x()) cpBall.velocity.x = -ballVelocity;
-        else cpBall.velocity.x = ballVelocity;
+        const CVect2& vBall = cpBall.Velocity();
+        const CVect2& vPaddle = cpPaddle.Velocity();
+
+        const CVect2& pBall = cpBall.Position();
+        const CVect2& pPaddle = cpPaddle.Position();
+
+        if (!CMath::isIntersecting(cpPaddle, cpBall)) 
+            return;
+
+        if (pBall.x < pPaddle.x)
+            cpBall.Velocity({ -ballVelocity, -ballVelocity });
+        else 
+            cpBall.Velocity({ ballVelocity, -ballVelocity });
 
     }
 
@@ -199,8 +209,8 @@ namespace Arkanoid
 
         // deduce if ball repel horizontally or vertically
         if (abs(minOverlapX) < abs(minOverlapY))
-            cpBall.velocity.x = BallFromLeft ? -ballVelocity : ballVelocity;
+            cpBall.Velocity({BallFromLeft ? -ballVelocity : ballVelocity, cpBall.Velocity().y});
         else
-            cpBall.velocity.y = BallFromTop ? -ballVelocity : ballVelocity;
+            cpBall.Velocity({ cpBall.Velocity().x, BallFromTop ? -ballVelocity : ballVelocity});
     }
 }
