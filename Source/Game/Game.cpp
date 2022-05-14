@@ -2,6 +2,7 @@
 #include "Arkanoid_ECS.h"
 #include "System.h"
 #include "Entity.h"
+#include "CMath.h"
 
 using namespace ECS;
 
@@ -101,9 +102,9 @@ namespace Arkanoid
         _window.display();
     }
 
-    void Game::render(const sf::Drawable& mDrawable)
+    void Game::render(const sf::Drawable& drawable)
     {
-        _window.draw(mDrawable);
+        _window.draw(drawable);
     }
 
     Entity& Game::createBall()

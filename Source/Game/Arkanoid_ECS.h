@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 #include "Arkanoid_Global.h"
-#include "CMath.h"
 #include "Component.h"
 
 using namespace ECS;
@@ -11,8 +10,6 @@ namespace Arkanoid
 {
     class Game;
 
-	// EC version
-	//------------
 	class CPosition : public Component
 	{
 		CVect2 _position;

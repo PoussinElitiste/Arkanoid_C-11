@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics/RenderWindow.hpp>
 #include "Arkanoid_Global.h"
-
 #include "Manager.h"
 
 using namespace ECS;
@@ -23,21 +22,17 @@ namespace Arkanoid
         };
 
         sf::RenderWindow _window;
-
         Frametime _lastFt = 0.f;
-
-        // our frame counter
         Frametime _currentSlice = 0.f;
-
         bool _running = false;
-
-        // handle all entities
         Manager _manager;
 
         void processCollisionPB(Entity& paddle, Entity& ball);
-
         void processCollisionBB(Entity& brick, Entity& ball);
 
+        void inputPhase();
+        void updatePhase();
+        void drawPhase();
     public:
         // factory
         Entity& createBall();
@@ -48,11 +43,6 @@ namespace Arkanoid
         Game();
 
         void run();
-        void inputPhase();
-
-        void updatePhase();
-
-        void drawPhase();
-        void render(const sf::Drawable& mDrawable);
+        void render(const sf::Drawable& drawable);
     };
 }
