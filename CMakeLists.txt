@@ -86,9 +86,7 @@ target_link_libraries(Arkanoid sfml-graphics sfml-audio Core)
 
 # add the binary tree to the search path for include files
 # so that we will find ArkanoidConfig.h
-target_include_directories(Arkanoid PUBLIC
-                           "${PROJECT_BINARY_DIR}"
-                           )
+target_include_directories(Arkanoid PUBLIC "${PROJECT_BINARY_DIR}")
 
 # add the install targets
 install(TARGETS Arkanoid DESTINATION bin)
