@@ -63,6 +63,7 @@ file(GLOB SOURCE_FILES_CLIENT "${ARKANOID_ROOT_DIR}/Source/Game/*.cpp")
 # Setup your library or executable:
 add_executable(Arkanoid ${HEADER_FILES_CLIENT} ${SOURCE_FILES_CLIENT})
 include_directories(${ARKANOID_ROOT_DIR}/Source/Core) # include files from Core
+include_directories(${ARKANOID_ROOT_DIR}/Source/Core/ECS) # TODO: generate relative path folder
 
 # Here's the important part ("Header Files" and "Source Files" are literals.)
 #source_group("Header\\core" ${HEADER_FILES_CLIENT_CORE})

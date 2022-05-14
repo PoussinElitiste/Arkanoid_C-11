@@ -3,16 +3,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CORE_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
 
-# get Header files recursive
-FILE(GLOB_RECURSE header_files_core "${CORE_ROOT_DIR}/*.h")
-LIST(REMOVE_DUPLICATES header_files_core)
-
-list(LENGTH header_files_core header_files_count)
-message(STATUS "[INFO] Found ${header_files_count} header files.")
-# file(GLOB HEADER_FILES_CORE "${CORE_ROOT_DIR}/*.h")
+# Tool to set subfolder filter in project
 function(assign_source_group files_core filter_name)
-    #message(STATUS "[INFO] ${filter_name}")
-    #message(STATUS "[INFO] ${assign_source_group}")
     foreach(_source IN ITEMS ${files_core})
         if (IS_ABSOLUTE "${_source}")
             file(RELATIVE_PATH _source_rel "${CMAKE_CURRENT_SOURCE_DIR}" "${_source}")
@@ -27,12 +19,22 @@ function(assign_source_group files_core filter_name)
     endforeach()
 endfunction(assign_source_group)
 
+# Set Header files Filter
+FILE(GLOB_RECURSE header_files_core "${CORE_ROOT_DIR}/*.h")
+LIST(REMOVE_DUPLICATES header_files_core)
+list(LENGTH header_files_core header_files_count)
+message(STATUS "[INFO] Found ${header_files_count} header files.")
 assign_source_group("${header_files_core}" "Header")
 
-file(GLOB SOURCE_FILES_CORE "${CORE_ROOT_DIR}/*.cpp")
+# Set Header files Filter
+FILE(GLOB_RECURSE source_files_core "${CORE_ROOT_DIR}/*.cpp")
+LIST(REMOVE_DUPLICATES source_files_core)
+list(LENGTH source_files_core source_files_count)
+message(STATUS "[INFO] Found ${source_files_count} source files.")
+assign_source_group("${source_files_core}" "Source")
 
 # Setup your library or executable:
-add_library(Core ${header_files_core} ${SOURCE_FILES_CORE})
+add_library(Core ${header_files_core} ${source_files_core})
 
 install(TARGETS Core
     LIBRARY DESTINATION lib
